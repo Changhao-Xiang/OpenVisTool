@@ -1,0 +1,4 @@
+interface:
+  display_name: "CCF Submission Checker"
+  short_description: "Check venue format, LaTeX/PDF package readiness, anonymity, metadata, and artifact/reproducibility packages."
+  default_prompt: "Use $ccf-submission-checker for venue rules, templates, page limits, package checks, and artifact/reproducibility readiness."
