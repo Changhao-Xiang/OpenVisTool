@@ -18,13 +18,15 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# (bench_path, eval_mode) pairs — run in this order.
+# (bench_path, eval_mode, avg_k) triples — run in this order.
+# The 3rd field sets per-bench avg@k; leave empty to fall back to the
+# AVG_K env var / forwarded --avg-k flag.
 BENCHES=(
-    "dataset/Chart_tool_bench_union.jsonl|judge"
-    "dataset/GUI_tool_bench_union.jsonl|gui"
-    "dataset/Table_tool_bench_union.jsonl|judge"
-    "dataset/VisualProbe_Hard.jsonl|judge"
-    # "dataset/Vision2Web/Vision2Web-webpage.jsonl|judge"
+    "dataset/Chart_tool_bench_union.jsonl|judge|4"
+    "dataset/GUI_tool_bench_union.jsonl|gui|4"
+    "dataset/Table_tool_bench_union.jsonl|judge|4"
+    "dataset/VisualProbe_Hard.jsonl|judge|4"
+    "dataset/Vision2Web/Vision2Web-webpage.jsonl|judge|1"
 )
 
 # Forwarded flags
@@ -34,14 +36,18 @@ failed=()
 declare -A run_dirs
 declare -a order   # preserve bench order for the summary
 for entry in "${BENCHES[@]}"; do
-    bench="${entry%%|*}"
-    mode="${entry##*|}"
+    IFS='|' read -r bench mode k <<< "$entry"
     name="$(basename "$bench" .jsonl)"
     order+=("$name")
 
+    # Per-bench avg@k (3rd field). Placed *before* FWD_ARGS so a user-supplied
+    # --avg-k on the command line still wins (eval.py's argparse is last-wins).
+    avgk_arg=()
+    [ -n "$k" ] && avgk_arg=(--avg-k "$k")
+
     echo
     echo "════════════════════════════════════════════════════════════════════"
-    echo "▶ [$name]  bench=$bench  eval_mode=$mode"
+    echo "▶ [$name]  bench=$bench  eval_mode=$mode${k:+  avg_k=$k}"
     echo "════════════════════════════════════════════════════════════════════"
 
     if [ ! -f "$bench" ]; then
@@ -57,7 +63,7 @@ for entry in "${BENCHES[@]}"; do
     before=$(ls -dt workspace/*/run_* 2>/dev/null | head -1 || true)
 
     set +e
-    ./eval.sh --bench "$bench" --eval-mode "$mode" "${FWD_ARGS[@]}"
+    ./eval.sh --bench "$bench" --eval-mode "$mode" "${avgk_arg[@]}" "${FWD_ARGS[@]}"
     rc=$?
     set -e
 
