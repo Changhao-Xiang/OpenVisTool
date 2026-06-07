@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-root = Path("/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill")
+root = Path("nanobot_for_distill")
 input_a = root / "workspaces/qwen35plus/AgentNet_ubuntu_filtered_index.jsonl"
 input_b = root / "dataset/GUI/AgentNet_processed/ubuntu_click_highres_difficulty_filtered_qwen35_9b_tool_gain_prefix.jsonl"
 output = root / "workspaces/qwen35plus/AgentNet_ubuntu_filtered_index_with_difficulty_filtered.jsonl"

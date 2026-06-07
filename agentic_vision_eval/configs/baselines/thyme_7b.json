@@ -1,0 +1,12 @@
+{
+  "name": "Thyme-RL-7B",
+  "model": "thyme",
+  "base_url": "https://YOUR_ENDPOINT/v1",
+  "api_key": "EMPTY",
+
+  "agent_mode": "thyme",
+
+  "temperature": 0.7,
+  "top_p": 0.95,
+  "max_tokens": 2048
+}

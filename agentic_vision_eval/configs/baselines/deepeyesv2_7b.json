@@ -1,0 +1,12 @@
+{
+  "name": "deepeyesv2_7b",
+  "model": "deepeyesv2",
+  "base_url": "https://YOUR_ENDPOINT/v1",
+  "api_key": "EMPTY",
+
+  "agent_mode": "deepeyesv2",
+
+  "temperature": 0.7,
+  "top_p": 0.95,
+  "max_tokens": 8192
+}

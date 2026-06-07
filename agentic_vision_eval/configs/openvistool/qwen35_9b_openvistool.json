@@ -1,0 +1,14 @@
+{
+  "name": "qwen35_9b_openvistool",
+  "model": "qwen35_9b_openvistool",
+  "base_url": "https://YOUR_ENDPOINT/v1",
+  "api_key": "123456",
+
+  "max_tokens": 32768,
+  "temperature": 0.6,
+  "top_p": 0.95,
+  "top_k": 20,
+  "min_p": 0.0,
+  "presence_penalty": 0.0,
+  "repetition_penalty": 1.0
+}
