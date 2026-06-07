@@ -30,12 +30,10 @@ gpt_proxy_client
 workspaces/*
 !workspaces/config_example.json
 hf_*
-CLAUDE.md
 srun.sh
 submit.sh
 format.sh
 
 run_*
 
-ms-swift
 OpenVisTool_paper
