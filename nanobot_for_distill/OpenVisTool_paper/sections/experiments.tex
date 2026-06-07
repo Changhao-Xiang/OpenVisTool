@@ -1,0 +1,97 @@
+\section{Experiments}
+\label{sec:experiments}
+
+\subsection{Evaluation Setup}
+\label{sec:setup}
+
+We evaluate \dataset on five domains that stress different visual tool-use patterns: Chart, GUI Grounding, Table, Visual Search, and Web-to-HTML. Chart, Table, and Visual Search are answer-matching tasks; GUI Grounding is scored by whether the predicted point falls inside the ground-truth bounding box; and Web-to-HTML is scored by rendering the generated HTML and judging the rendered page. All numbers are accuracy percentages, and AVG is the arithmetic mean over the five domains.
+
+\paragraph{Backbones.}
+To test whether the trajectories transfer across model scale and family, we fine-tune four backbones: Qwen3.5-4B, Qwen3.5-9B, Qwen3.5-27B, and Qwen3-VL-8B-Instruct. In the main results, each backbone is fine-tuned on \dataset for three epochs and evaluated with tools enabled. The corresponding baseline is the same backbone evaluated without tools.
+
+\paragraph{Controlled ablations.}
+For the filtering and trajectory-format ablations, we use Qwen3.5-9B and train all variants for the same number of optimizer steps (1,971). This keeps the comparison focused on the retained trajectories rather than training budget. \TODO{Add final SFT hyperparameters, hardware, and random-seed details.}
+
+\subsection{Main Results}
+\label{sec:main_results}
+
+Table~\ref{tab:main} shows that \dataset improves every domain for every backbone. The largest gains appear on Visual Search and Table, where tools can expose evidence that is difficult to recover from the original image alone. For Qwen3.5-9B, the average score improves from 32.6 to 45.8 (+13.2), including +23.8 on Visual Search and +17.3 on Table. The same pattern holds at smaller and larger scales, and also transfers to Qwen3-VL-8B-Instruct, suggesting that the recipe is not tied to one backbone.
+
+\begin{table*}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llrrrrrr}
+\toprule
+Backbone & Setting & Chart & GUI & Table & Vis.\ Search & Web2HTML & AVG \\
+\midrule
+\multirow{2}{*}{Qwen3.5-4B}
+  & w/o tool      & 31.6 & 22.0 & 25.4 & 34.0 & 40.8 & 30.8 \\
+  & + \dataset    & \textbf{43.0} & \textbf{27.4} & \textbf{37.3} & \textbf{56.6} & \textbf{43.4} & \textbf{41.5} \\
+\midrule
+\multirow{2}{*}{Qwen3.5-9B}
+  & w/o tool      & 34.6 & 27.1 & 25.8 & 35.6 & 40.1 & 32.6 \\
+  & + \dataset    & \textbf{49.3} & \textbf{31.6} & \textbf{43.1} & \textbf{59.4} & \textbf{45.5} & \textbf{45.8} \\
+\midrule
+\multirow{2}{*}{Qwen3.5-27B}
+  & w/o tool      & 45.7 & 28.9 & 29.8 & 43.2 & 46.6 & 38.8 \\
+  & + \dataset    & \textbf{60.7} & \textbf{31.6} & \textbf{48.2} & \textbf{57.3} & \textbf{48.7} & \textbf{49.3} \\
+\midrule
+\multirow{2}{*}{Qwen3-VL-8B-Instruct}
+  & w/o tool      & 22.1 & 13.0 & 26.7 & 31.8 & 26.5 & 24.0 \\
+  & + \dataset    & \textbf{26.1} & \textbf{19.7} & \textbf{35.3} & \textbf{50.7} & \textbf{32.9} & \textbf{32.9} \\
+\bottomrule
+\end{tabular}
+\caption{Main results. All \dataset rows are trained on OpenVisTool-42K for three epochs and evaluated with tools enabled. The baseline rows are the corresponding backbones evaluated without tools.}
+\label{tab:main}
+\end{table*}
+
+\subsection{Ablation: Filtering Strategy}
+\label{sec:ablation_gain}
+
+\dataset is produced by intersecting two filters: the teacher trajectory must be answer-correct, and the trajectory must have positive \toolgain (\S\ref{sec:filtering}). We compare this intersection against two ablation corpora: \emph{correctness-only}, which keeps trajectories solely by final answer correctness, and \emph{tool-gain-only}, which keeps trajectories solely by the gain criterion.
+
+Table~\ref{tab:ablation} shows that both filters are useful. The intersection corpus is best on all five domains and improves the Qwen3.5-9B average from 32.6 to 45.8. Correctness-only is close but consistently lower (44.1 AVG), while tool-gain-only is weaker still (42.4 AVG). This supports the intended role of the two filters: correctness removes invalid demonstrations, while \toolgain removes trajectories whose tool calls do not materially help solve the query.
+
+\begin{table*}[t]
+\centering
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lrrrrrr}
+\toprule
+Corpus (Qwen3.5-9B) & Chart & GUI & Table & Vis.\ Search & Web2HTML & AVG \\
+\midrule
+w/o tool              & 34.6 & 27.1 & 25.8 & 35.6 & 40.1 & 32.6 \\
+\midrule
+correctness-only      & 48.6 & 30.8 & 38.9 & 57.3 & 45.0 & 44.1 \\
+tool-gain-only        & 46.8 & 27.8 & 37.5 & 54.7 & 44.9 & 42.4 \\
+\dataset (both)       & \textbf{49.3} & \textbf{31.6} & \textbf{43.1} & \textbf{59.4} & \textbf{45.5} & \textbf{45.8} \\
+\bottomrule
+\end{tabular}
+\caption{Filtering-strategy ablation. All variants use Qwen3.5-9B and are trained for the same number of optimizer steps. The main \dataset, the intersection of correctness and \toolgain filters, is consistently strongest.}
+\label{tab:ablation}
+\end{table*}
+
+\subsection{Tool-Use Trajectories vs.\ No-Tool Trajectories}
+\label{sec:notool_traj}
+
+A separate question is whether the gains come from learning tool-use behavior or merely from distilling the teacher's final answers and textual reasoning. To test this, we train a matched \emph{no-tool trajectory SFT} baseline on the same queries, using the teacher's text-only trajectories and evaluating the resulting model without tools.
+
+Table~\ref{tab:notool} shows that tool-use trajectories are substantially better on average: \dataset reaches 45.8 AVG, compared with 37.1 for no-tool trajectory SFT. The advantage is especially large on Visual Search (+29.4) and Table (+13.1), where tool outputs provide new visual evidence. GUI Grounding is the clear exception: no-tool trajectory SFT reaches 40.0, compared with 31.6 for \dataset. We analyze this exception in \S\ref{sec:gui_exception}; it suggests that our current GUI tool-use protocol introduces overhead for a task whose metric rewards direct point prediction.
+
+\begin{table*}[t]
+\centering
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{llrrrrrr}
+\toprule
+Training data (Qwen3.5-9B) & Eval & Chart & GUI & Table & Vis.\ Search & Web2HTML & AVG \\
+\midrule
+none                    & w/o tool  & 34.6 & 27.1 & 25.8 & 35.6 & 40.1 & 32.6 \\
+no-tool trajectories    & w/o tool  & 42.1 & \textbf{40.0} & 30.0 & 30.0 & 43.8 & 37.1 \\
+\dataset trajectories   & with tool & \textbf{49.3} & 31.6 & \textbf{43.1} & \textbf{59.4} & \textbf{45.5} & \textbf{45.8} \\
+\bottomrule
+\end{tabular}
+\caption{Tool-use trajectories versus text-only teacher trajectories. The tool-use corpus wins on four of five domains and by 8.7 AVG points, while GUI Grounding favors direct no-tool trajectory imitation.}
+\label{tab:notool}
+\end{table*}

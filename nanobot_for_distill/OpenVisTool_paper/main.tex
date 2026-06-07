@@ -1,0 +1,61 @@
+\documentclass[11pt]{article} % For LaTeX2e
+
+% Change "review" to "final" for the camera-ready version,
+% or to "preprint" for a non-anonymous version with page numbers.
+\usepackage[review]{acl}
+
+% Standard package includes
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{inconsolata}
+
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usepackage{xspace}
+
+% ---- Custom macros (consistent terminology) ----
+\newcommand{\method}{OpenVisTool\xspace}
+\newcommand{\dataset}{OpenVisTool-42K\xspace}
+\newcommand{\benchname}{OpenVisTool-Bench\xspace}
+\newcommand{\toolgain}{tool gain\xspace}
+\newcommand{\eg}{e.g.,\xspace}
+\newcommand{\ie}{i.e.,\xspace}
+\newcommand{\etal}{\textit{et al.}\xspace}
+\newcommand{\TODO}[1]{\textcolor{red}{[TODO: #1]}}
+
+\title{\method: An Open Recipe for Synthesizing\\
+Cross-Domain Visual Tool-Use Trajectories}
+
+% Author information is hidden under the [review] option for anonymous submission.
+\author{Anonymous ACL submission}
+
+\begin{document}
+
+\maketitle
+
+\input{sections/introduction}
+\input{sections/related_work}
+\input{sections/method}
+\input{sections/experiments}
+\input{sections/analysis}
+\input{sections/conclusion}
+
+\section*{Limitations}
+\input{sections/limitations}
+
+\section*{Ethics Statement}
+\input{sections/ethics}
+
+\bibliography{custom}
+
+\appendix
+\input{sections/appendix}
+
+\end{document}

@@ -1,0 +1,38 @@
+\section{Related Work}
+\label{sec:related_work}
+
+% Organize methodologically (by line of work), not paper-by-paper.
+
+\paragraph{Tool-integrated multimodal reasoning.}
+A growing line of work moves multimodal models from reasoning \emph{over} a
+fixed image to \emph{acting} on it during inference---cropping, zooming,
+drawing, or otherwise manipulating the visual input as part of the reasoning
+chain---a paradigm popularized as ``thinking with images''
+\TODO{(cite o3 / the originating work)}. Open efforts instantiate this with
+operations such as region cropping and zoom for visual search, color or
+structure filtering for charts, and code rendering for layout tasks
+\TODO{(cite the main visual-search, chart, and GUI tool-use works)}. These
+methods consistently show that letting the model recover detail lost at the
+input resolution improves fine-grained perception. However, each typically
+designs a bespoke tool, dataset, and model for a \emph{single} domain, yielding
+no unified visual tool-use capability that transfers across tasks; we instead
+place five complementary domains under one heterogeneous toolset.
+
+\paragraph{Agentic trajectory synthesis.}
+Teaching tool use via supervised fine-tuning relies on collecting multi-turn
+trajectories, and a standard recipe distills them from a stronger teacher and
+keeps a trajectory by rejection sampling on final-answer correctness, in both
+the text \TODO{(cite Toolformer / text tool-use distillation and RL work)} and
+multimodal \TODO{(cite multimodal trajectory-synthesis work)} settings.
+Correctness alone, however, does not establish that the recorded tool calls
+\emph{mattered}: a trajectory whose answer the model could have produced
+without the tool is still retained, so the resulting model learns to
+\emph{emit} tool calls rather than to use them when they help. Closest to us
+are efforts that score or filter trajectories for quality \TODO{(cite
+data-quality / step-level filtering work)}, but to our knowledge none retains
+trajectories on the basis of a \emph{causal} \toolgain---the accuracy gap
+between solving with versus without the tool outputs---which is the criterion
+at the core of our recipe.
+
+% NOTE: every \cite here is a PLACEHOLDER until verified via Semantic Scholar /
+% CrossRef. Do not commit fabricated BibTeX.

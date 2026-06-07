@@ -1,0 +1,130 @@
+\section{The \method Pipeline}
+\label{sec:method}
+
+% Figure 1 belongs here: end-to-end pipeline diagram.
+\begin{figure}[t]
+  \centering
+  % \includegraphics[width=\linewidth]{figures/pipeline.pdf}
+  \fbox{\parbox{0.95\linewidth}{\centering\vspace{2.5cm}
+  \TODO{Figure 1: end-to-end pipeline. Query collection $\rightarrow$
+  difficulty filter $\rightarrow$ teacher rollout with visual toolset
+  $\rightarrow$ double rejection sampling (correctness $\cap$ \toolgain)
+  $\rightarrow$ SFT corpus.}\vspace{2.5cm}}}
+  \caption{Overview of \method. We collect queries from five visual reasoning
+  domains, remove text-solvable ones with a difficulty filter, distill teacher
+  trajectories with a shared visual toolset, and keep only trajectories that
+  are both \emph{answer-correct} and \emph{tool-gainful}.}
+  \label{fig:pipeline}
+\end{figure}
+
+\method synthesizes visual tool-use trajectories in four stages: query
+collection and difficulty filtering (\S\ref{sec:queries}), the unified visual
+toolset (\S\ref{sec:toolset}), teacher trajectory distillation
+(\S\ref{sec:rollout}), and double rejection sampling
+(\S\ref{sec:filtering}). We then convert the surviving trajectories to SFT
+samples (\S\ref{sec:sft}).
+
+\subsection{Query Collection and Difficulty Filtering}
+\label{sec:queries}
+
+We draw queries from five complementary domains, chosen so that different
+tools are stressed by different bottlenecks:
+% Domain table.
+\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{llr}
+\toprule
+Domain & Source datasets & \# Samples \\
+\midrule
+Chart         & ChartVerse-SFT-100K                       & 14K \\
+GUI Grounding & OS-Atlas (Linux/macOS/Windows), Ubuntu, UGround & 11K \\
+Web-to-HTML   & VinciCoder                                & 11K \\
+Table         & TABLET-Small, \TODO{table source}         & 5K  \\
+Visual Search & Vero-600k, DeepEyesV2-RL                   & 2K  \\
+\midrule
+\textbf{Total (\dataset)} & & \textbf{42K} \\
+\bottomrule
+\end{tabular}
+\caption{Domains, source datasets, and final sample counts in \dataset.}
+\label{tab:domains}
+\end{table*}
+
+\paragraph{Difficulty filtering.}
+A query whose answer a base model already produces by text-only reasoning
+teaches nothing about tool use. We score each query with a base model
+(\TODO{Qwen3.5-9B}) using no-tool average accuracy over $k$ samples
+($\text{avg}@k$) and discard queries that are too easy. \TODO{For sources with
+abundant easy examples (\eg CoSyn-400K) we additionally restrict to a
+difficulty band $\text{avg}@k \in [0.25, 0.75]$ to avoid both trivial and
+unsolvable queries.}
+
+\subsection{A Unified Visual Toolset}
+\label{sec:toolset}
+
+All domains share one heterogeneous toolset; each tool targets a distinct
+perceptual bottleneck.
+\begin{itemize}
+  \item \texttt{crop} / \texttt{zoom} --- recover fine detail lost at the
+  input resolution (visual search, GUI grounding, small chart text).
+  \item \texttt{draw\_bbox} --- mark and re-attend to a located region.
+  \item \texttt{in\_range\_color} --- isolate elements by color
+  (chart series, highlighted UI elements).
+  \item \texttt{render\_html} --- render generated HTML/code to a screenshot
+  for visual self-verification (Web-to-HTML).
+  \item \TODO{\texttt{computer\_use}, \texttt{enhance}, \texttt{transform},
+  \texttt{feature}, and other tools---list the final enabled set.}
+\end{itemize}
+Tool schemas are extracted automatically from the tool implementations, and
+files a tool produces are written to the trajectory's workspace with
+relative paths so that exported trajectories are host-independent.
+
+\subsection{Teacher Trajectory Distillation}
+\label{sec:rollout}
+
+For each filtered query we roll out a teacher model (\TODO{Qwen3.5-397B-A17B /
+Gemini}) inside an agent loop that interleaves thinking and tool calls until
+it produces a final answer. \TODO{Per-domain task-specific instructions guide
+when and how to call tools.} We record the full thinking-plus-tool-call
+trajectory for each query.
+
+\subsection{Double Rejection Sampling}
+\label{sec:filtering}
+
+A distilled trajectory is kept only if it passes \emph{both} of the following.
+
+\paragraph{(i) Answer correctness.}
+We verify the teacher's final answer with one of three backends matched to the
+domain: \emph{rule}-based matching (generic / point / bounding-box modes) for
+grounding and structured answers, an \emph{LLM judge} for free-form answers,
+and a \emph{render-based VLM judge} for Web-to-HTML (the generated code is
+rendered to a screenshot and scored by a VLM). We additionally apply tool-call
+sanity heuristics (\eg rejecting absolute host paths or missing images).
+
+\paragraph{(ii) Tool gain.}
+Correctness alone does not establish that the tool calls mattered. We define
+the \toolgain of a trajectory as
+\begin{equation}
+  \Delta = \text{avg}@k_{\text{with-tool}} - \text{avg}@k_{\text{no-tool}},
+  \label{eq:toolgain}
+\end{equation}
+where $\text{avg}@k_{\text{no-tool}}$ is the base model's accuracy on the query
+with no tools, and $\text{avg}@k_{\text{with-tool}}$ is its accuracy when the
+teacher's tool outputs are prepended to its context. A trajectory is retained
+only when $\Delta$ exceeds a threshold $\tau$ (\TODO{default $0.1$}),
+\ie\ seeing the tool outputs causally improves the base model. The final
+\dataset is the intersection of the correctness-passing and tool-gain-passing
+sets.
+
+\paragraph{Ablation variants.}
+To isolate the effect of each criterion we build three corpora: correctness
+only, \toolgain only, and the intersection (the main \dataset). We compare
+all three in \S\ref{sec:experiments}.
+
+\subsection{Conversion to SFT Samples}
+\label{sec:sft}
+
+Surviving trajectories are converted into multi-turn SFT samples in the
+ms-swift format, with the enabled tool schemas attached so the model learns
+the tool interface. \TODO{State final example count per variant and total
+(42K for the main dataset).}

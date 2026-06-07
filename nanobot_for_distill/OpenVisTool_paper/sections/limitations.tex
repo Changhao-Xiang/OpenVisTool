@@ -1,0 +1,14 @@
+% Honest limitations -- reviewers are instructed not to penalize honesty.
+\TODO{Candidate limitations to discuss:}
+\begin{itemize}
+  \item The \toolgain metric is estimated with a specific base model and $k$;
+  the threshold $\tau$ is a hyperparameter and the gain estimate is noisy at
+  small $k$.
+  \item Trajectories are distilled from a single teacher; quality and tool-use
+  style are bounded by the teacher's behavior.
+  \item Coverage is five domains and one toolset; other visual tools and
+  domains are out of scope.
+  \item SFT only; we do not study RL or test-time tool-use scaling.
+  \item Answer-correctness backends (rule / judge / render) have their own
+  error rates that propagate into the retained set.
+\end{itemize}

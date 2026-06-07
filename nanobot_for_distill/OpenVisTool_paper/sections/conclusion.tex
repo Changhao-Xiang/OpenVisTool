@@ -1,0 +1,15 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+We presented \method, an open and reproducible recipe for synthesizing
+cross-domain visual tool-use trajectories. The recipe spans five complementary
+domains under one visual toolset and curates trajectories with double rejection
+sampling, pairing answer-correctness checking with a \toolgain criterion that
+retains a trajectory only when its tool calls were necessary to reach the
+answer. It yields \dataset, an openly released 42K-example agentic SFT corpus.
+Fine-tuning on \dataset improves every domain across backbones from 4B to 27B
+and on a separate model family, with gains of up to \TODO{+18.9} points
+(Visual Search, Qwen3.5-9B); our ablations show that both filters are needed,
+as dropping either one degrades the resulting model. We release the dataset and
+the full pipeline to support unified, quality-controlled visual tool-use
+research.
