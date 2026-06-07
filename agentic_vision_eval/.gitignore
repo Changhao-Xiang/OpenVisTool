@@ -1,0 +1,33 @@
+# Secrets — config files now contain api_key fields. Track templates only.
+configs/*.json
+!configs/*.json.example
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+*.egg-info/
+
+# uv
+.uv/
+uv.lock
+
+# Eval output
+workspace/
+*.jsonl.bak
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db

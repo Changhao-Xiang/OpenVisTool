@@ -1,0 +1,22 @@
+[project]
+name = "agentic-vision-eval"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "loguru>=0.7.3",
+    "numpy>=2.2.6",
+    "openai>=2.32.0",
+    "opencv-python-headless>=4.13.0.92",
+    "pillow>=12.2.0",
+    "playwright>=1.49.0",
+    "rich>=13.0",
+    "scipy>=1.15.3",
+]
+
+# uv only manages the venv. Entry scripts (eval.py / rejudge.py) are run
+# directly via `uv run python -u eval.py ...` — no install / rebuild step,
+# so source edits take effect immediately.
+#
+# Configure uv to NOT install this directory as a package.
+[tool.uv]
+package = false

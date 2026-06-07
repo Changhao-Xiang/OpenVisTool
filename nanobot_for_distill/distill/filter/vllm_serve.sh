@@ -1,0 +1,11 @@
+vllm serve /mnt/afs_reason/xiangchanghao/hf_models/Qwen3-VL-30B-A3B-Instruct \
+    --served-model-name Qwen3-VL-30B-A3B-Instruct \
+    --max-model-len 131072 \
+    --tensor-parallel-size 4 \
+    --data-parallel-size 2 \
+    --enable-expert-parallel \
+    --dtype bfloat16 \
+    --limit-mm-per-prompt.video 0 \
+    --port 8000 \
+    --host 0.0.0.0 \
+    --gpu-memory-utilization 0.8
