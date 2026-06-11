@@ -1,24 +1,32 @@
-\documentclass[11pt]{article} % For LaTeX2e
+\documentclass[letterpaper]{article} % DO NOT CHANGE THIS
+% Change [submission] to [] for the camera-ready version.
+% Fonts (newtxtext, helvet, courier) are loaded automatically by aaai2027.sty;
+% do NOT add \usepackage{times} or any other font package.
+\usepackage[submission]{aaai2027}  % DO NOT CHANGE THIS
+\usepackage[hyphens]{url}  % DO NOT CHANGE THIS
+\usepackage{graphicx} % DO NOT CHANGE THIS
+\urlstyle{rm} % DO NOT CHANGE THIS
+\def\UrlFont{\rm}  % DO NOT CHANGE THIS
+\usepackage{natbib}  % DO NOT CHANGE THIS AND DO NOT ADD ANY OPTIONS TO IT
+\usepackage{caption} % DO NOT CHANGE THIS AND DO NOT ADD ANY OPTIONS TO IT
+\frenchspacing  % DO NOT CHANGE THIS
 
-% Change "review" to "final" for the camera-ready version,
-% or to "preprint" for a non-anonymous version with page numbers.
-\usepackage[review]{acl}
-
-% Standard package includes
-\usepackage{times}
-\usepackage{latexsym}
-\usepackage[T1]{fontenc}
-\usepackage[utf8]{inputenc}
-\usepackage{microtype}
-\usepackage{inconsolata}
-
+% Recommended for better-looking tables
 \usepackage{booktabs}
 \usepackage{multirow}
-\usepackage{graphicx}
+
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{xcolor}
 \usepackage{xspace}
+
+% Keep the \pdfinfo as shown here. There's no need
+% for you to add the /Title and /Author tags.
+\pdfinfo{
+/TemplateVersion (2027.1)
+}
+
+\setcounter{secnumdepth}{2} % AAAI default is 0; numbered sections enabled.
 
 % ---- Custom macros (consistent terminology) ----
 \newcommand{\method}{OpenVisTool\xspace}
@@ -33,8 +41,10 @@
 \title{\method: An Open Recipe for Synthesizing\\
 Cross-Domain Visual Tool-Use Trajectories}
 
-% Author information is hidden under the [review] option for anonymous submission.
-\author{Anonymous ACL submission}
+% The [submission] option replaces the author block with
+% "Anonymous submission" automatically; fill in for camera-ready.
+\author{Anonymous submission}
+\affiliations{Anonymous affiliation}
 
 \begin{document}
 
@@ -53,6 +63,7 @@ Cross-Domain Visual Tool-Use Trajectories}
 \section*{Ethics Statement}
 \input{sections/ethics}
 
+% aaai2027.sty already sets \bibliographystyle{aaai2027}.
 \bibliography{custom}
 
 \appendix

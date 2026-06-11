@@ -51,6 +51,14 @@ node_modules/
 *.arrow
 *.log
 
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.out
+*.synctex.gz
+nanobot_for_distill/OpenVisTool_paper/main.pdf
+
 # Secrets and credentials
 .env
 .env.*
