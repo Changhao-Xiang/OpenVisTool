@@ -10,6 +10,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `flash-attention/` 和 `ms-swift/` 是子仓库（被复制进来的训练栈），不在 `nanobot` / `distill` 主开发路径上 —— 改动它们前先确认意图。
 
+## 论文写作约定（OpenVisTool_paper/）
+
+编辑 `OpenVisTool_paper/sections/*.tex` 的正文时，**一行一段**：每个自然段排成一行（段间用空行分隔），不要在段内手动换行。`\paragraph{}` 标题单独占一行、其正文另起一行；`itemize` / `enumerate` 里每个 `\item` 占一行。新写或重排章节时参照 `introduction.tex` / `related_work.tex` 的排版。
+
 ## 环境
 
 - 运行任何项目脚本（包括 pytest）前，先 `conda activate nanobot`。`cv2` 等第三方依赖只在该环境里能加载。运行 `which conda` 的结果是 `/mnt/afs_share/miniconda3/condabin/conda`。
@@ -20,8 +24,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `filter/` 跑各类评测/打分，`select/` 据分数挑样本，`run/` 做教师 rollout，`utils/` 转 SFT 并组装 OpenVisTool。典型流程：
 
-1. **难度过滤** — `distill/filter/filter_difficulty.sh` → `filter_difficulty.py`：用基模型（Qwen3.5-9B）对每条样本做 no-tool avg@k，去掉纯文本推理就能直接解决的题。全量分数写在 `*.progress.jsonl`（字段 `avg_k`），通过阈值的样本写 `*_difficulty_filtered_*.jsonl`。
-2. **难度区间选择** — `distill/select/select_difficulty_range.sh` → `select_difficulty_range.py`：从 `.progress.jsonl` 里挑 avg@k 落在 `[min,max]` 的样本（如 CoSyn-400K 取 0.25~0.75），避免过易/过难。
+1. **难度过滤** — `distill/filter/filter_difficulty.sh` → `filter_difficulty.py`：用基模型（Qwen3.5-9B）对每条样本做 no-tool avg@k（k=4），**所有领域统一只保留 avg@4 ≤ 0.5 的样本**，去掉纯文本推理就能直接解决的题。全量分数写在 `*.progress.jsonl`（字段 `avg_k`），通过阈值的样本写 `*_difficulty_filtered_*.jsonl`。
+2. **难度区间选择** — `distill/select/select_difficulty_range.sh` → `select_difficulty_range.py`：从 `.progress.jsonl` 里挑 avg@k 落在 `[min,max]` 的样本（CoSyn-400K 同样取 `[0, 0.5]`，与统一阈值一致），输出文件名带区间标签（如 `table_difficulty_range_0_0.5.jsonl`）。
 3. **教师 rollout** — `distill/run/run_qwen35_plus.sh`（或 `run_gemini.sh`）→ `distill/run.py`：用教师模型对过滤后的数据集批量 rollout，轨迹写到 `<workspace>/session_<id>/`。任务特化 prompt 在 `distill/run/task_specific_toolcall_instructions/`（chart/table/GUI_Grounding/visual_search/html_code_generation），由 `--custom-instructions-override` 注入。`--num-workers` 控制并发。
 4. **正确性 + 工具调用质量过滤** — `distill/filter/filter_acc_toolcall.sh` → `filter_acc_toolcall.py`：检查最终答案正确性 + 工具调用启发式规则（拒绝 host 绝对路径、缺图等），产出 correctness index（`*_filtered_index.jsonl`）。答案判定后端 `--accuracy-backend` 三选一：`rule`（确定性匹配，`--match-mode` generic/point/bbox）、`judge`（JudgeLLM）、`html_vlm`（VinciCoder 截图→HTML，渲染后 VLM 打分）；分别由 `evaluate_answer_rule.py` / `evaluate_answer_judge.py` / `evaluate_html_vlm_judge.py` 实现。
 5. **工具增益（tool-gain）打分 + 选择**：
