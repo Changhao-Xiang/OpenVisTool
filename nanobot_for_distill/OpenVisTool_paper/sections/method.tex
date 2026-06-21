@@ -1,130 +1,144 @@
-\section{The \method Pipeline}
+\section{\method}
 \label{sec:method}
 
-% Figure 1 belongs here: end-to-end pipeline diagram.
-\begin{figure}[t]
-  \centering
-  % \includegraphics[width=\linewidth]{figures/pipeline.pdf}
-  \fbox{\parbox{0.95\linewidth}{\centering\vspace{2.5cm}
-  \TODO{Figure 1: end-to-end pipeline. Query collection $\rightarrow$
-  difficulty filter $\rightarrow$ teacher rollout with visual toolset
-  $\rightarrow$ double rejection sampling (correctness $\cap$ \toolgain)
-  $\rightarrow$ SFT corpus.}\vspace{2.5cm}}}
-  \caption{Overview of \method. We collect queries from five visual reasoning
-  domains, remove text-solvable ones with a difficulty filter, distill teacher
-  trajectories with a shared visual toolset, and keep only trajectories that
-  are both \emph{answer-correct} and \emph{tool-gainful}.}
-  \label{fig:pipeline}
-\end{figure}
+\method curates visual tool-use trajectories so that supervised fine-tuning teaches \emph{evidence acquisition} rather than tool-call mimicry. We first fix notation and the criteria a retained trajectory must satisfy (\S\ref{sec:overview}), then describe the three pipeline stages: assembling source data and rejecting easy queries (\S\ref{sec:data}), synthesizing teacher trajectories under per-domain tool-use patterns (\S\ref{sec:synthesis}), and double rejection sampling on correctness and \toolgain (\S\ref{sec:filtering}). Figure~\ref{fig:pipeline} summarizes the full pipeline.
 
-\method synthesizes visual tool-use trajectories in four stages: query
-collection and difficulty filtering (\S\ref{sec:queries}), the unified visual
-toolset (\S\ref{sec:toolset}), teacher trajectory distillation
-(\S\ref{sec:rollout}), and double rejection sampling
-(\S\ref{sec:filtering}). We then convert the surviving trajectories to SFT
-samples (\S\ref{sec:sft}).
-
-\subsection{Query Collection and Difficulty Filtering}
-\label{sec:queries}
-
-We draw queries from five complementary domains, chosen so that different
-tools are stressed by different bottlenecks:
-% Domain table.
-\begin{table*}[t]
+% ============================================================================
+% FIGURE 1 --- Pipeline overview (wide, top of Method).
+% To draw: a left-to-right pipeline with four stages.
+%   (1) Source corpora, grouped into the five domains
+%       (Chart / GUI Grounding / Table / Visual Search / Web-to-HTML), each tagged
+%       with its visual bottleneck.
+%   (2) Difficulty filtering: probe model pi0 = Qwen3.5-9B runs k no-tool rollouts
+%       per query; only "hard" queries (no-tool avg@k <= 0.5) pass -- gate C1.
+%   (3) Teacher rollout under the SHARED visual toolset, steered by a per-domain
+%       tool-use pattern; each step emits thinking -> tool call -> observation.
+%   (4) Double rejection sampling: a correctness check (rule / LLM-judge / render-VLM)
+%       AND a tool-gain check (prepend the teacher's observations to pi0 and require
+%       an avg@k uplift) -- gate C2. The intersection is OpenVisTool-42K.
+% Render gates C1 (difficulty) and C2 (tool gain) as the two distinctive "rejection"
+% steps; correctness is the conventional check between them.
+% ============================================================================
+\begin{figure*}[t]
 \centering
-\small
-\begin{tabular}{llr}
-\toprule
-Domain & Source datasets & \# Samples \\
-\midrule
-Chart         & ChartVerse-SFT-100K                       & 14K \\
-GUI Grounding & OS-Atlas (Linux/macOS/Windows), Ubuntu, UGround & 11K \\
-Web-to-HTML   & VinciCoder                                & 11K \\
-Table         & TABLET-Small, \TODO{table source}         & 5K  \\
-Visual Search & Vero-600k, DeepEyesV2-RL                   & 2K  \\
-\midrule
-\textbf{Total (\dataset)} & & \textbf{42K} \\
-\bottomrule
-\end{tabular}
-\caption{Domains, source datasets, and final sample counts in \dataset.}
-\label{tab:domains}
-\end{table*}
+\fbox{\begin{minipage}[c][3.8cm][c]{0.96\textwidth}
+\centering\itshape
+[Figure~\ref{fig:pipeline} placeholder]\\[2pt]
+End-to-end \method pipeline: five-domain source corpora $\rightarrow$ difficulty filtering (no-tool avg@$k$ with the probe model $\pi_0$) $\rightarrow$ teacher rollout under the shared visual toolset with per-domain tool-use patterns $\rightarrow$ double rejection sampling (answer correctness $\cap$ \toolgain) $\rightarrow$ \dataset.
+\end{minipage}}
+\caption{Overview of the \method synthesis recipe. A query survives only if it is both hard for a base solver without tools (gate~C1, difficulty filtering) and backed by a teacher trajectory whose recorded observations measurably improve that solver (gate~C2, \toolgain); answer correctness is checked in between. The same visual toolset is shared across all five domains.}
+\label{fig:pipeline}
+\end{figure*}
+
+\subsection{Overview and Notation}
+\label{sec:overview}
+
+A training instance is a query $q=(x, t)$ pairing one or more images $x$ with a text instruction $t$, drawn from a domain $d\in\{\textsc{Chart},\textsc{GUI},\textsc{Table},\textsc{VisualSearch},\textsc{Web2HTML}\}$ and annotated with a reference answer $a^\star$. Rolling out a tool-using teacher $\mathcal{T}$ on $q$ produces a \emph{trajectory} $\zeta=\big(r_1,c_1,o_1,\dots,r_m,c_m,o_m,\hat{a}\big)$ that interleaves reasoning steps $r_i$, tool calls $c_i$, and the observations $o_i$ each call returns, terminating in a final answer $\hat{a}$. An observation is the new evidence a tool surfaces---a cropped region, an annotated overlay, a color mask, a rendered screenshot, or a computed value---that the teacher could not read off the original image in a single pass.
+
+Our goal is to retain only trajectories that demonstrate \emph{useful} tool use. We operationalize this with two conditions. (C1) The query should \emph{benefit} from tools: a base solver should not already answer it from a single static view. (C2) The recorded observations should \emph{causally improve} solving the query, not merely co-occur with a correct answer. C1 is a property of $q$ and is enforced before synthesis; C2 is a property of $\zeta$ and is enforced after. Throughout the pipeline we use a single, fixed probe model $\pi_0$ (Qwen3.5-9B) as the reference ``base solver,'' and the strong teacher $\mathcal{T}$ (Qwen3.5-Plus) for rollout; the recipe is teacher-agnostic, and we also support Gemini as an alternative teacher.
+
+\paragraph{A shared visual toolset.}
+All domains expose the same toolset, so the model learns reusable visual operations rather than a separate interface per task. The tools fall into five families: \emph{geometric transforms} (\texttt{crop}, \texttt{locate\_in\_crop}, \texttt{rotate}, \texttt{flip}) that zoom into and re-index regions; \emph{annotation aids} (\texttt{draw\_bbox}, \texttt{draw\_line}, \texttt{draw\_circle}) that mark and align targets; \emph{readability enhancement} (\texttt{enhance\_contrast}, \texttt{adjust\_brightness}, \texttt{grayscale}) for faint or low-contrast inputs; \emph{color and structure analysis} (\texttt{in\_range\_color}, \texttt{detect\_edges}, \texttt{find\_contours}, \texttt{connected\_components}, \texttt{hough\_lines}, \texttt{template\_match}) that isolate categories or shapes; and \emph{computation and action} (\texttt{exec} and \texttt{write\_file} for scripted arithmetic, \texttt{render\_html} for the generate--render loop, and \texttt{computer\_use} for emitting a final GUI click). What differs across domains is not the toolset but \emph{which} operations are canonical and \emph{in what order} they are invoked, as described next.
+
+\subsection{Source Data and Difficulty Filtering}
+\label{sec:data}
+
+\paragraph{Source corpora.}
+We assemble \method from public multimodal corpora chosen so that each domain stresses a distinct visual bottleneck. \textsc{Chart} draws on ChartVerse-SFT~\citep{chartverse}; \textsc{Table} on the table split of CoSyn-400K~\citep{cosyn} and TABLET~\citep{tablet}; \textsc{GUI} on OS-Atlas~\citep{osatlas} (macOS, Linux, and Windows screenshots), AgentNet~\citep{agentnet}, and UGround~\citep{uground}; \textsc{VisualSearch} on Vero-600K~\citep{vero} and the visual-search split of DeepEyesV2~\citep{hong2026deepeyesv2}; and \textsc{Web2HTML} on VinciCoder~\citep{vincicoder}, which pairs webpage screenshots with reference HTML. Each source supplies $(q, a^\star)$ pairs; we keep the original gold answers and re-purpose the images as queries for tool-augmented solving.
+
+\paragraph{Selecting tool-amenable inputs.}
+Before any rollout, we bias the candidate pool toward inputs where tools have room to help. For the grounding-heavy domains we prefer \emph{high-resolution images in which the target occupies a small fraction of the frame}: OS-Atlas, AgentNet, and UGround screenshots are filtered to high-resolution canvases with small target bounding boxes, and Visual Search items to high-resolution non-chart scenes. A small target in a large image is exactly the regime where a single static encoding fails and a crop-and-zoom step recovers the missing detail, so this selection raises the headroom for condition~C1.
 
 \paragraph{Difficulty filtering.}
-A query whose answer a base model already produces by text-only reasoning
-teaches nothing about tool use. We score each query with a base model
-(\TODO{Qwen3.5-9B}) using no-tool average accuracy over $k$ samples
-($\text{avg}@k$) and discard queries that are too easy. \TODO{For sources with
-abundant easy examples (\eg CoSyn-400K) we additionally restrict to a
-difficulty band $\text{avg}@k \in [0.25, 0.75]$ to avoid both trivial and
-unsolvable queries.}
+We then remove queries that a base solver already answers without any tool. For each candidate $q$ we run $k$ no-tool rollouts with the probe model $\pi_0$ (temperature $0.7$, $k{=}4$) and score each completion with a domain-appropriate evaluator $\mathcal{E}_d\in\{0,1\}$ (\S\ref{sec:filtering}), giving a no-tool pass rate
+\begin{equation}
+\bar{p}_0(q)\;=\;\frac{1}{k}\sum_{j=1}^{k}\mathcal{E}_d\!\left(\pi_0(q)^{(j)},\,a^\star\right).
+\label{eq:nopt}
+\end{equation}
+We keep a query only when its no-tool avg@$k$ is at most $0.5$, \ie $\bar{p}_0(q)\le 0.5$, applying the same threshold across all domains; this discards items the base model can already solve from a single static view and leaves the teacher to demonstrate tools on genuinely hard queries. The no-tool pass rate $\bar{p}_0(q)$ is cached and reused as the baseline for the \toolgain test in \S\ref{sec:filtering}.
 
-\subsection{A Unified Visual Toolset}
-\label{sec:toolset}
+\subsection{Trajectory Synthesis with Per-Domain Tool-Use Patterns}
+\label{sec:synthesis}
 
-All domains share one heterogeneous toolset; each tool targets a distinct
-perceptual bottleneck.
+\paragraph{Why patterns.}
+A generic ``use tools when helpful'' prompt elicits inconsistent and often decorative tool use: the teacher may answer correctly while its calls are incidental, or skip the very operation a query needs. We instead encode, for each domain, a \emph{tool-use pattern}---a short sequence of canonical operations keyed to that domain's visual bottleneck---and steer the teacher to follow it. The patterns share the toolset of \S\ref{sec:overview} but differ in which tools are canonical and in what order they fire (Figure~\ref{fig:patterns}).
+
 \begin{itemize}
-  \item \texttt{crop} / \texttt{zoom} --- recover fine detail lost at the
-  input resolution (visual search, GUI grounding, small chart text).
-  \item \texttt{draw\_bbox} --- mark and re-attend to a located region.
-  \item \texttt{in\_range\_color} --- isolate elements by color
-  (chart series, highlighted UI elements).
-  \item \texttt{render\_html} --- render generated HTML/code to a screenshot
-  for visual self-verification (Web-to-HTML).
-  \item \TODO{\texttt{computer\_use}, \texttt{enhance}, \texttt{transform},
-  \texttt{feature}, and other tools---list the final enabled set.}
+\item \textbf{Chart and Table} (fine-grained reading, structural alignment): \texttt{crop} to the relevant subplot, cell block, or header region; \texttt{draw\_line} / \texttt{draw\_bbox} to align a value with its axis tick or to lock a row against a column header; \texttt{in\_range\_color} to resolve a legend, series, or highlighted cell by color; \texttt{enhance\_contrast} for faint gridlines or faded scans; and \texttt{exec} to compute sums, ratios, and rankings instead of doing mental arithmetic.
+\item \textbf{GUI Grounding} (local inspection, coordinate precision): \texttt{crop} a tight window around the candidate element, decide the click in the crop's local coordinates, then \texttt{locate\_in\_crop} to map that click back into the original image's $0$--$1000$ space; the trajectory terminates in a single \texttt{computer\_use} click action. Predicting on a tight crop and remapping amplifies precision relative to estimating the coordinate on the full screenshot.
+\item \textbf{Visual Search} (active search in clutter): \texttt{crop} candidate regions to verify fine attributes; \texttt{draw\_bbox} to track multiple candidates and avoid missed or double counting; \texttt{in\_range\_color} for color-defined targets; \texttt{adjust\_brightness} / \texttt{enhance\_contrast} to recover targets lost in dark or low-contrast scenes; and \texttt{exec} to aggregate counts over detections.
+\item \textbf{Web-to-HTML} (generate--render--observe--revise): optionally inspect the reference with \texttt{crop} or color sampling, \texttt{write\_file} a first HTML draft, \texttt{render\_html} it to a screenshot, name the concrete visual discrepancies against the reference, \texttt{edit\_file} to patch, and re-render; iterate until the rendered page matches. At least one render is required---the closed verification loop is the point.
 \end{itemize}
-Tool schemas are extracted automatically from the tool implementations, and
-files a tool produces are written to the trajectory's workspace with
-relative paths so that exported trajectories are host-independent.
 
-\subsection{Teacher Trajectory Distillation}
-\label{sec:rollout}
+% ============================================================================
+% FIGURE 2 --- Per-domain tool-use patterns (wide).
+% To draw: a 4- (or 5-) panel strip, one canonical trajectory per domain, each shown
+% as image -> tool call -> observation -> ... -> answer.
+%   Chart:  raw chart -> crop subplot -> draw_line at queried x -> read value.
+%   GUI:    screenshot -> tight crop -> click in crop -> locate_in_crop -> computer_use click on full image.
+%   Visual Search: cluttered scene -> crop candidate -> draw_bbox / in_range_color -> verified answer.
+%   Web2HTML: reference shot -> write_file draft -> render_html -> diff -> edit_file -> re-render (loop).
+% Emphasize that all panels draw from ONE shared toolset but in domain-specific order.
+% ============================================================================
+\begin{figure*}[t]
+\centering
+\fbox{\begin{minipage}[c][3.9cm][c]{0.96\textwidth}
+\centering\itshape
+[Figure~\ref{fig:patterns} placeholder]\\[2pt]
+One canonical tool-use trajectory per domain, each rendered as image~$\rightarrow$~tool call~$\rightarrow$~observation~$\rightarrow$~$\dots$~$\rightarrow$~answer: Chart (\texttt{crop}+\texttt{draw\_line}), GUI (\texttt{crop}+\texttt{locate\_in\_crop}+\texttt{computer\_use}), Visual Search (\texttt{crop}+\texttt{draw\_bbox}), and Web-to-HTML (\texttt{write\_file}$\rightarrow$\texttt{render\_html}$\rightarrow$\texttt{edit\_file} loop).
+\end{minipage}}
+\caption{Per-domain tool-use patterns. All domains share one visual toolset; what differs is which operations are canonical and in what order they fire. The teacher is steered to follow these patterns through domain-specific instructions, so the recorded trajectories demonstrate the right operation at the right moment rather than arbitrary calls.}
+\label{fig:patterns}
+\end{figure*}
 
-For each filtered query we roll out a teacher model (\TODO{Qwen3.5-397B-A17B /
-Gemini}) inside an agent loop that interleaves thinking and tool calls until
-it produces a final answer. \TODO{Per-domain task-specific instructions guide
-when and how to call tools.} We record the full thinking-plus-tool-call
-trajectory for each query.
+\paragraph{Steering the teacher.}
+We realize the patterns through an agent loop that runs $\mathcal{T}$ as a tool-using agent: at each turn it emits a reasoning step and an optional tool call, the tool executes, and its observation is appended to the context for the next turn; the loop ends at a final answer (or, for GUI, at the terminal \texttt{computer\_use} action), up to a fixed budget of $30$ tool rounds. For each domain we inject a domain-specific instruction into the teacher's system prompt that enumerates, per tool, a concrete trigger tied to the domain's bottleneck, and---for GUI and Web-to-HTML---prescribes the required multi-step workflow above. The instruction also asks the teacher to attach an explicit hypothesis to every call and to call only when it reduces ambiguity, which suppresses gratuitous tool use at the source. Each query runs in an isolated workspace so that tool-produced files are sandboxed and all paths are relativized; the distilled trajectories therefore contain no host-specific absolute paths. Full prompts are given in the appendix.
 
 \subsection{Double Rejection Sampling}
 \label{sec:filtering}
 
-A distilled trajectory is kept only if it passes \emph{both} of the following.
+Difficulty filtering (\S\ref{sec:data}) is the first rejection, applied to queries. We now apply two further filters to the synthesized trajectories and keep their \emph{intersection}: a conventional correctness check, and a \toolgain check that is the second distinctive rejection of the recipe.
 
-\paragraph{(i) Answer correctness.}
-We verify the teacher's final answer with one of three backends matched to the
-domain: \emph{rule}-based matching (generic / point / bounding-box modes) for
-grounding and structured answers, an \emph{LLM judge} for free-form answers,
-and a \emph{render-based VLM judge} for Web-to-HTML (the generated code is
-rendered to a screenshot and scored by a VLM). We additionally apply tool-call
-sanity heuristics (\eg rejecting absolute host paths or missing images).
+\paragraph{Correctness.}
+A trajectory is retained only if its final answer $\hat{a}$ matches $a^\star$ under a domain-appropriate evaluator $\mathcal{E}_d$. We use three backends. \emph{Rule-based matching} handles answers with a canonical form: normalized string/number matching with tolerance for Chart, Table, and Visual Search, and a point-in-box test for GUI (the predicted click must fall inside the ground-truth box). An \emph{LLM judge} (Qwen3.5-27B) scores free-form answers where surface matching is brittle. A \emph{render-based VLM judge} handles Web-to-HTML: the generated HTML is rendered to a screenshot and a VLM compares it to the reference page. On top of answer matching we apply tool-call quality rules that reject malformed demonstrations---trajectories that reference host absolute paths, point at missing or unreadable images, or exhaust the tool-round budget without answering.
 
-\paragraph{(ii) Tool gain.}
-Correctness alone does not establish that the tool calls mattered. We define
-the \toolgain of a trajectory as
+\paragraph{Tool gain.}
+Correctness alone cannot tell whether the tools \emph{mattered}: a teacher can reach the right answer while its observations are decorative. The \toolgain filter tests condition~C2 directly by asking whether the teacher's observations, on their own, help the base solver. We extract the observation sequence $o_{1:m}$ from a (correct) trajectory, prepend it---without any of the teacher's reasoning---to $\pi_0$'s context for the same query, and recompute the pass rate
 \begin{equation}
-  \Delta = \text{avg}@k_{\text{with-tool}} - \text{avg}@k_{\text{no-tool}},
-  \label{eq:toolgain}
+\bar{p}_{\mathrm{pre}}(q)\;=\;\frac{1}{k}\sum_{j=1}^{k}\mathcal{E}_d\!\left(\pi_0\big(q\,;\,o_{1:m}\big)^{(j)},\,a^\star\right).
+\label{eq:prefix}
 \end{equation}
-where $\text{avg}@k_{\text{no-tool}}$ is the base model's accuracy on the query
-with no tools, and $\text{avg}@k_{\text{with-tool}}$ is its accuracy when the
-teacher's tool outputs are prepended to its context. A trajectory is retained
-only when $\Delta$ exceeds a threshold $\tau$ (\TODO{default $0.1$}),
-\ie\ seeing the tool outputs causally improves the base model. The final
-\dataset is the intersection of the correctness-passing and tool-gain-passing
-sets.
+The \toolgain is the improvement over the cached no-tool baseline of Eq.~\eqref{eq:nopt},
+\begin{equation}
+g(q)\;=\;\bar{p}_{\mathrm{pre}}(q)-\bar{p}_0(q),
+\label{eq:gain}
+\end{equation}
+and we keep the trajectory iff $g(q)\ge\delta$ (default $\delta{=}0.1$). Because only the observations---not the teacher's chain of thought---are injected, a positive gain certifies that the recorded evidence is itself usable: it raised a base model's accuracy on a query the same model could not reliably solve before. Trajectories whose tools were incidental yield $g(q)\!\approx\!0$ and are discarded (Figure~\ref{fig:toolgain}).
 
-\paragraph{Ablation variants.}
-To isolate the effect of each criterion we build three corpora: correctness
-only, \toolgain only, and the intersection (the main \dataset). We compare
-all three in \S\ref{sec:experiments}.
+% ============================================================================
+% FIGURE 3 --- Tool-gain measurement (single column).
+% To draw: a schematic contrasting two probes of pi0 on the same query.
+%   Top:  pi0 with no tools -> avg@k = p0 (low).
+%   Bottom: pi0 given the teacher's OBSERVATIONS as a prefix (no teacher reasoning)
+%           -> avg@k = p_pre. Gain g = p_pre - p0.
+% Show one KEPT example (g >= delta, observations reveal the answer) and one
+% REJECTED example (g ~ 0, decorative tools). Mark the threshold delta = 0.1.
+% ============================================================================
+\begin{figure}[t]
+\centering
+\fbox{\begin{minipage}[c][4.4cm][c]{0.94\linewidth}
+\centering\itshape
+[Figure~\ref{fig:toolgain} placeholder]\\[2pt]
+\toolgain measurement: compare $\pi_0$'s no-tool avg@$k$ ($\bar{p}_0$) against its avg@$k$ when given the teacher's observations as a prefix ($\bar{p}_{\mathrm{pre}}$). Keep the trajectory iff $g=\bar{p}_{\mathrm{pre}}-\bar{p}_0\ge\delta$; decorative tool calls give $g\!\approx\!0$ and are rejected.
+\end{minipage}}
+\caption{The \toolgain filter. Injecting only the observations (not the teacher's reasoning) isolates whether the tools surfaced \emph{usable} evidence, separating causally useful trajectories from those that merely co-occur with a correct answer.}
+\label{fig:toolgain}
+\end{figure}
 
-\subsection{Conversion to SFT Samples}
-\label{sec:sft}
+\paragraph{The retained corpus.}
+Intersecting the correctness and \toolgain filters yields the main \dataset. We additionally release two controlled variants for ablation: \emph{correctness-only}, which keeps trajectories by answer correctness alone, and \emph{tool-gain-only}, which keeps them by the gain criterion alone. The two filters are complementary: correctness removes invalid demonstrations while \toolgain removes causally useless ones, and Section~\ref{sec:ablation_gain} shows their intersection dominates either filter in isolation.
 
-Surviving trajectories are converted into multi-turn SFT samples in the
-ms-swift format, with the enabled tool schemas attached so the model learns
-the tool interface. \TODO{State final example count per variant and total
-(42K for the main dataset).}
+\subsection{From Trajectories to the SFT Corpus}
+\label{sec:corpus}
+
+Retained sessions are converted into SFT samples that preserve the full interaction---the teacher's reasoning, each tool call with its arguments, and the returned observation---so that fine-tuning supervises \emph{when} and \emph{how} to call tools, not just the final answer. Tool schemas are extracted automatically from the toolset implementations, keeping the data consistent with the agent the student will run at inference. Merging the per-domain selections gives the 42K-trajectory \dataset; the per-domain counts before and after each filter stage, together with the two ablation variants, are reported in the appendix. We fine-tune student models on these trajectories with tools enabled, and evaluate against the same backbones run without tools (Section~\ref{sec:experiments}).

@@ -2,22 +2,85 @@
 \label{sec:appendix}
 
 \subsection{Pipeline Configuration Details}
-\TODO{Teacher model config, num-workers, max tool iterations, temperature,
-per-domain task-specific instruction prompts.}
+\label{app:pipeline}
+
+\paragraph{Teacher rollout.}
+Trajectories are synthesized by running the teacher $\mathcal{T}$ (Qwen3.5-Plus) as a tool-using agent in an agent loop: at each turn the teacher emits a reasoning step and an optional tool call, the tool executes in a per-query sandbox, and the resulting observation is appended to the context for the next turn. The loop terminates when the teacher emits a final answer or, for GUI Grounding, the terminal \texttt{computer\_use} click; it is capped at $30$ tool rounds. The recipe is teacher-agnostic and we also support Gemini as an alternative teacher. Rollout is parallelized across queries with a configurable worker pool, and recoverable API errors are retried so that long batches resume cleanly.
+
+\paragraph{Per-query isolation and path safety.}
+Each query runs in its own workspace with a private media directory, so the files a tool produces (crops, annotated overlays, color masks, rendered screenshots) never collide across queries. All paths written into a trajectory are relativized to that workspace, so the exported SFT samples contain no host-specific absolute paths; trajectories that nonetheless reference an absolute host path or a missing image are dropped by the correctness stage (\S\ref{sec:filtering}).
+
+\paragraph{Per-domain instructions.}
+The tool-use pattern for each domain is supplied as a domain-specific instruction injected into the teacher's system prompt at rollout time, on top of the shared toolset. These instructions enumerate, per tool, a concrete trigger tied to the domain's visual bottleneck, and---for GUI Grounding and Web-to-HTML---prescribe a required multi-step workflow (\S\ref{app:prompts}).
+
+\paragraph{Conversion to SFT.}
+Retained sessions are converted to ms-swift training samples that preserve the teacher's reasoning, every tool call with its arguments, and each returned observation. Tool JSON schemas are extracted automatically from the toolset implementations rather than maintained by hand, so the supervised interface matches the agent the student runs at inference.
 
 \subsection{Difficulty and Tool-Gain Hyperparameters}
-\TODO{$k$ for avg@$k$, difficulty thresholds per source, gain threshold
-$\tau$, and the rule/judge/render backend settings per domain.}
+\label{app:hyperparams}
+
+Table~\ref{tab:hparams} lists the hyperparameters of the three measurement stages. Both the difficulty filter and the \toolgain probe use the same fixed base model $\pi_0$ (Qwen3.5-9B), so the two pass rates $\bar{p}_0$ and $\bar{p}_{\mathrm{pre}}$ are directly comparable when forming the gain $g=\bar{p}_{\mathrm{pre}}-\bar{p}_0$. Difficulty filtering keeps a query when its no-tool avg@$k$ is at most $0.5$, uniformly across domains; the \toolgain filter keeps a trajectory when $g\ge 0.1$. The per-domain answer evaluator $\mathcal{E}_d$ is shared by all stages: rule-based matching for Chart, Table, and Visual Search (point-in-box for GUI), an LLM judge (Qwen3.5-27B) where surface matching is brittle, and a render-based VLM judge for Web-to-HTML.
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lll}
+\toprule
+ & Difficulty filter & \toolgain probe \\
+\midrule
+Probe model $\pi_0$ & Qwen3.5-9B & Qwen3.5-9B \\
+Rollouts $k$ (avg@$k$) & 4 & 4 \\
+Temperature & 0.7 & 0.7 \\
+Max new tokens & 32768 & 16384 \\
+Observation prefix & --- & teacher $o_{1:m}$ \\
+Per-obs.\ char limit & --- & 10000 \\
+Keep rule & $\bar{p}_0(q)\le 0.5$ & $g(q)\ge 0.1$ \\
+\bottomrule
+\end{tabular}
+\caption{Hyperparameters for difficulty filtering and \toolgain probing. Both stages share the base model $\pi_0$ and the per-domain evaluator $\mathcal{E}_d$. Answer judging uses Qwen3.5-27B; the teacher used for rollout is Qwen3.5-Plus.}
+\label{tab:hparams}
+\end{table}
 
 \subsection{Dataset Card}
-\TODO{Per-domain source datasets, licenses, sample counts before/after each
-filter stage, and the three released variants
-(\texttt{OpenVisTool}, \texttt{OpenVisTool\_acc\_only},
-\texttt{OpenVisTool\_toolgain\_only}).}
+\label{app:datacard}
+
+\paragraph{Sources and selection.}
+Table~\ref{tab:datacard} maps each domain to its source corpora, the pre-rollout selection applied, and the answer-evaluation backend. The grounding-heavy domains (GUI, Visual Search) are pre-filtered to high-resolution images with small targets, the regime where a single static encoding is weakest; every domain is then difficulty-filtered to no-tool avg@$k\le 0.5$ before teacher rollout.
+
+\paragraph{Released variants.}
+We release three corpora built from the same trajectories under different retention rules: \texttt{OpenVisTool} (the main \dataset, correctness~$\cap$~\toolgain), \texttt{OpenVisTool\_acc\_only} (correctness only), and \texttt{OpenVisTool\_toolgain\_only} (\toolgain only). We additionally provide a no-tool counterpart on the same queries for the trajectory-format ablation of \S\ref{sec:notool_traj}. Per-domain sample counts before and after each filter stage, source licenses, and split sizes are released with the dataset. \TODO{Fill per-domain counts before/after difficulty, correctness, and \toolgain filtering, and source licenses.}
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llll}
+\toprule
+Domain & Source corpora & Pre-selection & Eval \\
+\midrule
+Chart & ChartVerse-SFT & avg@$k\le0.5$ & rule \\
+Table & CoSyn-400K, TABLET & avg@$k\le0.5$ & judge \\
+GUI & OS-Atlas, AgentNet, & high-res, & point- \\
+ & \;UGround & \;small bbox & \;in-box \\
+Vis.\ Search & Vero-600K, DeepEyesV2 & high-res scenes & rule \\
+Web2HTML & VinciCoder & avg@$k\le0.5$ & render-VLM \\
+\bottomrule
+\end{tabular}
+\caption{Dataset card. Each domain's source corpora, the pre-rollout selection (all domains additionally pass the uniform no-tool avg@$k\le0.5$ difficulty filter), and the answer-evaluation backend used by the correctness filter.}
+\label{tab:datacard}
+\end{table}
 
 \subsection{Qualitative Trajectory Examples}
-\TODO{Rendered thinking + tool-call + tool-output trajectories, one or two per
-domain.}
+\label{app:qualitative}
+
+\TODO{Rendered thinking~+~tool-call~+~tool-output trajectories, one or two per domain: a Chart \texttt{crop}+\texttt{draw\_line} read, a GUI \texttt{crop}$\to$\texttt{locate\_in\_crop}$\to$\texttt{computer\_use} click, a Visual Search \texttt{crop}+\texttt{draw\_bbox} verification, and a Web-to-HTML \texttt{render\_html}$\to$\texttt{edit\_file} revision loop. Pair each with its $\bar{p}_0$, $\bar{p}_{\mathrm{pre}}$, and gain $g$ to illustrate the \toolgain criterion.}
 
 \subsection{Prompts}
-\TODO{Full system prompt, per-domain instruction templates, and judge prompts.}
+\label{app:prompts}
+
+\paragraph{System prompt.}
+The teacher's system prompt is assembled dynamically from the enabled toolset: the tool schemas in effect for a run are inserted automatically, and the per-domain instruction is appended on top. Because the same assembly is used at inference, the student sees the same prompt structure it was trained on.
+
+\paragraph{Domain instructions.}
+Each domain instruction lists, per tool, a concrete trigger condition keyed to that domain's bottleneck, and asks the teacher to attach an explicit hypothesis to every call and to call only when it reduces ambiguity. For the two domains with a mandatory multi-step protocol we additionally fix the trajectory shape. GUI Grounding requires: (i) \texttt{crop} a tight window around the candidate element; (ii) decide the click on the cropped image in its local $0$--$1000$ space; (iii) \texttt{locate\_in\_crop} to map that click back to the original image; (iv) emit exactly one \texttt{computer\_use} \texttt{*\_click} at the returned coordinate, which terminates the trajectory. Web-to-HTML requires: (i) optionally inspect the reference with \texttt{crop} or color sampling; (ii) \texttt{write\_file} a first self-contained HTML draft; (iii) \texttt{render\_html} and name the concrete discrepancies against the reference; (iv) \texttt{edit\_file} and re-render, iterating until the rendered page matches---at least one render is mandatory. The complete per-domain instruction templates and the LLM/VLM judge prompts are released with the code. \TODO{Paste the verbatim per-domain instruction templates and judge prompts.}
