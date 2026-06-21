@@ -9,8 +9,8 @@ Example:
     python distill/filter/select_difficulty_range.py \
         --dataset dataset/Table/CoSyn-400K/table.jsonl \
         --progress dataset/Table/CoSyn-400K/table_difficulty_filtered_qwen35_9b.progress.jsonl \
-        --min-avg 0.25 \
-        --max-avg 0.75
+        --min-avg 0.0 \
+        --max-avg 0.5
 """
 
 from __future__ import annotations

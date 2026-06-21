@@ -27,7 +27,7 @@ DATASETS=(
   "GUI	dataset/GUI/OS-Atlas-data/os_atlas_windows_highres_small_bbox_difficulty_filtered.jsonl"
   "VisualSearch	dataset/VisualSearch/DeepEyesV2_RL_highres_nonchart_difficulty_filtered_qwen35_9b.jsonl"
   "VisualSearch	dataset/VisualSearch/Vero-600k-visual-search_difficulty_filtered_qwen35_9b.jsonl"
-  "Table	dataset/Table/CoSyn-400K/table_difficulty_range_0.25_0.75.jsonl	dataset/Table/CoSyn-400K/table_difficulty_filtered_qwen35_9b.progress.jsonl"
+  "Table	dataset/Table/CoSyn-400K/table_difficulty_range_0_0.5.jsonl	dataset/Table/CoSyn-400K/table_difficulty_filtered_qwen35_9b.progress.jsonl"
   "Table	dataset/Table/TABLET-Small/TABLET-Small_difficulty_filtered_qwen35_9b.jsonl"
   "VinciCoder	dataset/Code/VinciCoder-1.6M-SFT/vincicoder_bucket_selected_difficulty_filtered_qwen35_9b.jsonl"
 )

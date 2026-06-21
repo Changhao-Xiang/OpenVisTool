@@ -5,7 +5,7 @@ export OPENAI_API_KEY="EMPTY"
 export OPENAI_API_BASE="${OPENAI_API_BASE:-https://YOUR_JUDGE_ENDPOINT/v1}"
 JUDGE_MODEL="Qwen3.5-27B"
 
-DATASET=dataset/Table/CoSyn-400K/table_difficulty_range_0.25_0.75.jsonl
+DATASET=dataset/Table/CoSyn-400K/table_difficulty_range_0_0.5.jsonl
 SESSIONS_DIR=workspaces/qwen35plus/CoSyn-400K
 OUTPUT=${SESSIONS_DIR}_filtered_index.jsonl
 # OUTPUT=workspaces/qwen35plus/OS-Atlas-data/windows_filtered_index.jsonl

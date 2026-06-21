@@ -21,7 +21,7 @@ mkdir -p "$SWIFTDIR"
 
 # domain <TAB> swift_basename <TAB> index_file(rel ROOT) <TAB> sessions_dir(rel WS)
 JOBS=(
-  "Table	Table__table_difficulty_range_0.25_0.75	dataset/OpenVisTool/index/Table__table_difficulty_range_0.25_0.75_correct_and_gain.jsonl	Table__CoSyn-400K"
+  "Table	Table__table_difficulty_range_0_0.5	dataset/OpenVisTool/index/Table__table_difficulty_range_0_0.5_correct_and_gain.jsonl	Table__CoSyn-400K"
   "Table	Table__TABLET-Small_difficulty_filtered_qwen35_9b	dataset/OpenVisTool/index/Table__TABLET-Small_difficulty_filtered_qwen35_9b_correct_and_gain.jsonl	Table__TABLET-Small"
   "VisualSearch	VisualSearch__DeepEyesV2_RL_highres_nonchart_difficulty_filtered_qwen35_9b	dataset/OpenVisTool/index/VisualSearch__DeepEyesV2_RL_highres_nonchart_difficulty_filtered_qwen35_9b_correct_and_gain.jsonl	VisualSearch__DeepEyesV2_RL"
   "VisualSearch	VisualSearch__Vero-600k-visual-search_difficulty_filtered_qwen35_9b	dataset/OpenVisTool/index/VisualSearch__Vero-600k-visual-search_difficulty_filtered_qwen35_9b_correct_and_gain.jsonl	VisualSearch__Vero-600k"

@@ -4,8 +4,8 @@
 DATASET=dataset/Table/CoSyn-400K/table.jsonl
 PROGRESS=${DATASET%.jsonl}_difficulty_filtered_qwen35_9b.progress.jsonl
 
-MIN_AVG=0.25
-MAX_AVG=0.75
+MIN_AVG=0.0
+MAX_AVG=0.5
 
 # OUTPUT defaults to <dataset_stem>_difficulty_range_<min>_<max>.jsonl if unset
 # OUTPUT=${DATASET%.jsonl}_difficulty_range_${MIN_AVG}_${MAX_AVG}.jsonl

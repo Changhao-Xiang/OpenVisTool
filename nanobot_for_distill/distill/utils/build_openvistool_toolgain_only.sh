@@ -30,7 +30,7 @@ JOBS=(
   "GUI	GUI__os_atlas_windows_highres_small_bbox_difficulty_filtered	OS-Atlas-data/windows"
   "VisualSearch	VisualSearch__DeepEyesV2_RL_highres_nonchart_difficulty_filtered_qwen35_9b	DeepEyesV2_RL"
   "VisualSearch	VisualSearch__Vero-600k-visual-search_difficulty_filtered_qwen35_9b	Vero-600k-visual-search"
-  "Table	Table__table_difficulty_range_0.25_0.75	CoSyn-400K"
+  "Table	Table__table_difficulty_range_0_0.5	CoSyn-400K"
   "Table	Table__TABLET-Small_difficulty_filtered_qwen35_9b	TABLET-Small"
   "VinciCoder	VinciCoder__vincicoder_bucket_selected_difficulty_filtered_qwen35_9b	VinciCoder"
 )
