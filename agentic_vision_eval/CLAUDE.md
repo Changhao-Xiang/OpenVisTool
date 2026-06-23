@@ -22,6 +22,20 @@ WORKERS=16 MAX_STEPS=30 AVG_K=4 ./eval.sh --model-config ...     # 环境变量�
 
 跑单题调试：用 `-n 1` 或先把 bench 截成一行 jsonl 再传 `--bench`。没有测试套件（验证靠 `uv run python -m py_compile` + 直接 `import harness`）。
 
+## 评测数据集来源与收集方法
+
+`multi_eval.sh` 默认跑五个评测集，分别覆盖 Chart、GUI、Table、VisualSearch 和 Web2HTML。评测数据放在 `dataset/*.jsonl` 或子目录下，当前仓库通常不提交 `dataset/` 大文件，只保留脚本中的路径约定。
+
+| 领域 | 默认 bench | 来源与收集方法 |
+| --- | --- | --- |
+| Chart | `dataset/Chart_tool_bench_union.jsonl` | 基于 CharXiv-reasoning 和 ChartMuseum 筛选。对每个样本分别用 GPT-5.4、Gemini-3.0-Flash、Qwen3.5-Plus 做 no-tool 推理和 with-tools 推理，计算 avg@5；保留“给工具后 avg@5 变高但仍 `< 1`”的样本，三模型筛选结果取并集。 |
+| Table | `dataset/Table_tool_bench_union.jsonl` | 基于 MMT-Bench 和 TableVQA-Bench 筛选。筛选流程与 Chart 相同：三个强模型分别比较 no-tool / with-tools 的 avg@5，保留工具带来提升但未完全解决（avg@5 `< 1`）的样本，并取三模型并集。 |
+| GUI | `dataset/GUI_tool_bench_union.jsonl` | 直接使用 ScreenSpot-Pro 中目标元素占整张图片比例最小的一部分，共 117 条，评测时走 `gui` 模式的 point-in-bbox 几何评分。 |
+| VisualSearch | `dataset/VisualProbe_Hard.jsonl` | 直接使用 VisualProbe-Hard。 |
+| Web2HTML | `dataset/Vision2Web/Vision2Web-webpage.jsonl` | 直接使用 Vision2Web-Level1，评测时按 Vision2Web 路径渲染生成 HTML 并做组件级视觉保真评分。 |
+
+Chart / Table 的筛选目标不是只找“难题”，而是找工具确实能提供增益、但强模型在有工具时仍未达到满分的样本；这样评测能区分模型是否真正利用视觉工具，而不是只考察已有的静态看图能力。
+
 ## 包结构
 
 库代码集中在 `harness/`：四个职责子包 + 一个 `tools/`（agent 调用的工具实现）。依赖方向**自上而下单向**（`core ← agents/scoring/runtime`，`scoring` 不依赖 `agents`，`runtime` 可依赖 `scoring`；`tools` 被 `agents`/`runtime` 调用、内部自洽不反依赖其它子包），图无环。入口脚本 `eval.py` / `rejudge.py` 按子包导入（`from harness.agents import run` 等）；`harness/__init__.py` 另提供一个扁平 facade（`from harness import run`）。
