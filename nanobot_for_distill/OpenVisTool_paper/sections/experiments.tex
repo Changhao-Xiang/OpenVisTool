@@ -1,97 +1,159 @@
 \section{Experiments}
 \label{sec:experiments}
 
-\subsection{Evaluation Setup}
+% ============================================================================
+% SKELETON ONLY. Each paragraph below carries the key points / wording to keep;
+% prose is intentionally terse and tables are placeholders. Fill in later.
+% Section folds in the former Discussion (cross-domain transfer + GUI exception).
+% Reporting order is deliberate:
+%   capability (5.2) -> defend against benchmark bias (5.3) -> attribute to the
+%   recipe (5.4) -> characterize internal transfer (5.5).
+% ============================================================================
+
+\subsection{Experimental Setup}
 \label{sec:setup}
 
-We evaluate \dataset on five domains that stress different visual tool-use patterns: Chart, GUI Grounding, Table, Visual Search, and Web-to-HTML. Chart, Table, and Visual Search are answer-matching tasks; GUI Grounding is scored by whether the predicted point falls inside the ground-truth bounding box; and Web-to-HTML is scored by rendering the generated HTML and judging the rendered page. All numbers are accuracy percentages, and AVG is the arithmetic mean over the five domains.
+\subsubsection{Evaluation Benchmark}
+% KEEP the framing below: the benchmark is, by design, a visual-tool-use
+% diagnostic; the per-domain selection mechanism differs but the principle is one.
 
-\paragraph{Backbones.}
-To test whether the trajectories transfer across model scale and family, we fine-tune four backbones: Qwen3.5-4B, Qwen3.5-9B, Qwen3.5-27B, and Qwen3-VL-8B-Instruct. In the main results, each backbone is fine-tuned on \dataset for three epochs and evaluated with tools enabled. The corresponding baseline is the same backbone evaluated without tools.
+\paragraph{Design goal.}
+\benchname is built so that visual tool use is \emph{decision-relevant}: a model with strong tool-use ability should score clearly higher than one that only reads a static view. We therefore retain, per domain, the instances on which tool use is necessary or beneficial rather than sampling the source benchmarks uniformly.
 
-\paragraph{Controlled ablations.}
-For the filtering and trajectory-format ablations, we use Qwen3.5-9B and train all variants for the same number of optimizer steps (1,971). This keeps the comparison focused on the retained trajectories rather than training budget. \TODO{Add final SFT hyperparameters, hardware, and random-seed details.}
+\paragraph{Per-domain construction (one principle, two mechanisms).}
+All five domains concentrate on tool-decisive instances; only how we obtain them differs with what each source affords.
+\begin{itemize}
+\item \textbf{Chart and Table} --- source QA pools (CharXiv-reasoning $+$ ChartMuseum; MMT-Bench $+$ TableVQA-Bench) are dominated by tool-irrelevant questions, so we \emph{explicitly select}: keep an instance when giving tools raises avg@$5$ above the no-tool avg@$5$ \emph{yet stays below $1$} (a measurable gain, with headroom left). Selection uses the \emph{union} of three third-party strong models (GPT-5.4, Gemini-3.0-Flash, Qwen3.5-Plus); the criterion is ``tools \emph{in principle} help'' (model-agnostic), not ``\emph{our} toolset helps,'' which avoids circularity with the evaluated students.
+\item \textbf{GUI, Visual Search, Web-to-HTML} --- the source benchmark is \emph{already} curated for the corresponding visual operation, so we adopt it directly: the smallest-target subset of ScreenSpot-Pro (117 items), VisualProbe-Hard, and Vision2Web-Level1. An additional avg@$5$ filter here would shrink the set below a usable size, so none is applied.
+\end{itemize}
+
+\paragraph{Scoring.}
+Per-domain evaluators match the source task: extractor $+$ voting LLM judge giving $0/1$ for Chart, Table, and Visual Search; geometric point-in-bbox for GUI; and component-level visual fidelity ($0$--$100$, rendered HTML vs.\ reference) for Web-to-HTML. We report per-domain scores and their average, at avg@$k$.
+
+\paragraph{Full-set control (Chart/Table).}
+% Neutralizes the "you rigged the benchmark for tools" critique.
+Because only Chart and Table are selected by us, we additionally report these two on the \emph{unfiltered} original sets to show the selection \emph{concentrates} rather than \emph{manufactures} the gain (smaller but positive). The non-self-selected OOD benchmarks (\S\ref{sec:ood}) provide the broader control. \TODO{Add full-set Chart/Table numbers (at least Qwen3.5-9B); appendix table.}
+
+\subsubsection{Student Models and Training}
+
+\paragraph{Backbones and training.}
+We fine-tune four backbones spanning two model families and 4B--27B scale --- Qwen3.5-4B/9B/27B and Qwen3-VL-8B-Instruct --- on \dataset for three epochs with ms-swift, tools enabled at inference. Optimization details are in the appendix.
+
+\subsubsection{Inference Protocol and Baselines}
+
+\paragraph{Protocol.}
+``With tool'' runs the fine-tuned model as a tool-using agent over the shared visual toolset (up to a fixed tool-round budget); ``w/o tool'' runs the same backbone single-pass without tools. Metric is per-domain accuracy and the average, at avg@$k$.
+
+\paragraph{Baselines.}
+Three groups: (i) the \emph{no-tool} base backbones; (ii) released visual tool-use models \textbf{Thyme} and \textbf{DeepEyesV2}, both on Qwen2.5-VL-7B --- a base mismatch with our students, so we frame this as a comparison to \emph{released models}, not a controlled comparison \TODO{Optionally train \dataset on Qwen2.5-VL-7B for an apples-to-apples row.}; and (iii) data-variant baselines (correctness-only, tool-gain-only, and a no-tool-trajectory SFT on the same queries), defined here and used in \S\ref{sec:ablation_gain}.
 
 \subsection{Main Results}
 \label{sec:main_results}
 
-Table~\ref{tab:main} shows that \dataset improves every domain for every backbone. The largest gains appear on Visual Search and Table, where tools can expose evidence that is difficult to recover from the original image alone. For Qwen3.5-9B, the average score improves from 32.6 to 45.8 (+13.2), including +23.8 on Visual Search and +17.3 on Table. The same pattern holds at smaller and larger scales, and also transfers to Qwen3-VL-8B-Instruct, suggesting that the recipe is not tied to one backbone.
+\paragraph{\dataset improves every backbone and every domain.}
+The average rises for all four backbones (Qwen3.5-4B $30.8\!\to\!41.5$, 9B $32.6\!\to\!45.8$, 27B $38.8\!\to\!49.3$, Qwen3-VL-8B $24.0\!\to\!32.9$), across two families and 4B--27B scale.
 
+\paragraph{Gains concentrate where tools surface new evidence.}
+Largest improvements are on the evidence-acquisition domains, Visual Search and Table (Qwen3.5-9B: $+23.8$ and $+17.3$); domains answerable from a static view gain least. (Why: \S\ref{sec:cross_domain}.)
+
+\paragraph{Released tool-use models do not transfer cross-domain.}
+On the same shared base, Thyme ($18.2$) and DeepEyesV2 ($15.5$) fall \emph{below} the no-tool base ($19.2$) on the five-domain average, collapsing on out-of-specialty domains (DeepEyesV2: Web2HTML $2.4$, GUI $1.7$) --- motivating a single cross-domain corpus rather than narrow-domain data.
+
+% ============================================================================
+% TABLE (tab:main) --- Main in-domain results on \benchname.  table*.
+% Source: result.md "Main Results" block + the 4-backbone "+ openvistool 42k" block.
+% Cols: Model | setting | Chart | GUI | Table | VisualSearch | Web2HTML | AVG
+% Rows: [released-models block on Qwen2.5-VL-7B: w/o tool; Thyme; DeepEyesV2]
+%       then per backbone: w/o tool vs. + \dataset (with tool). Bold best AVG per backbone.
+% ============================================================================
 \begin{table*}[t]
 \centering
-\small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{llrrrrrr}
-\toprule
-Backbone & Setting & Chart & GUI & Table & Vis.\ Search & Web2HTML & AVG \\
-\midrule
-\multirow{2}{*}{Qwen3.5-4B}
-  & w/o tool      & 31.6 & 22.0 & 25.4 & 34.0 & 40.8 & 30.8 \\
-  & + \dataset    & \textbf{43.0} & \textbf{27.4} & \textbf{37.3} & \textbf{56.6} & \textbf{43.4} & \textbf{41.5} \\
-\midrule
-\multirow{2}{*}{Qwen3.5-9B}
-  & w/o tool      & 34.6 & 27.1 & 25.8 & 35.6 & 40.1 & 32.6 \\
-  & + \dataset    & \textbf{49.3} & \textbf{31.6} & \textbf{43.1} & \textbf{59.4} & \textbf{45.5} & \textbf{45.8} \\
-\midrule
-\multirow{2}{*}{Qwen3.5-27B}
-  & w/o tool      & 45.7 & 28.9 & 29.8 & 43.2 & 46.6 & 38.8 \\
-  & + \dataset    & \textbf{60.7} & \textbf{31.6} & \textbf{48.2} & \textbf{57.3} & \textbf{48.7} & \textbf{49.3} \\
-\midrule
-\multirow{2}{*}{Qwen3-VL-8B-Instruct}
-  & w/o tool      & 22.1 & 13.0 & 26.7 & 31.8 & 26.5 & 24.0 \\
-  & + \dataset    & \textbf{26.1} & \textbf{19.7} & \textbf{35.3} & \textbf{50.7} & \textbf{32.9} & \textbf{32.9} \\
-\bottomrule
-\end{tabular}
-\caption{Main results. All \dataset rows are trained on OpenVisTool-42K for three epochs and evaluated with tools enabled. The baseline rows are the corresponding backbones evaluated without tools.}
+\fbox{\begin{minipage}[c][3.0cm][c]{0.96\textwidth}\centering\itshape
+[Table~\ref{tab:main} placeholder] Main in-domain results on \benchname (Chart / GUI / Table / Visual Search / Web2HTML $+$ AVG): released tool-use models on a shared base, then each of the four backbones run w/o tool vs.\ fine-tuned on \dataset.
+\end{minipage}}
+\caption{Main results on \benchname. \dataset improves every backbone on every domain; released tool-use models built for narrow domains do not transfer.}
 \label{tab:main}
 \end{table*}
 
-\subsection{Ablation: Filtering Strategy}
+\subsection{Out-of-Distribution Generalization}
+\label{sec:ood}
+
+\paragraph{Gains hold on benchmarks we did not select.}
+% This subsection is the control for the Chart/Table tool-amenable selection.
+Because our in-domain Chart/Table sets are selected for tool-amenability, we verify on three benchmarks that were \emph{not}: Agentic-MME, AgentVista, and VTC-Bench. \dataset improves across backbones (Qwen3.5-9B: Agentic-MME $33.7\!\to\!41.6$, VTC-Bench $23.8\!\to\!41.4$), so the gain is not an artifact of benchmark construction.
+
+\paragraph{Honest caveat.}
+One cell regresses (Qwen3-VL-8B on AgentVista, $8.6\!\to\!6.2$); the trend is otherwise consistent.
+
+% ============================================================================
+% TABLE (tab:ood) --- OOD generalization.  single-column table.
+% Source: result.md "OOD-Benchmark" block.
+% Cols: Model | setting | Agentic-MME | AgentVista | VTC-Bench
+% Rows: per backbone w/o tool vs. + \dataset.
+% ============================================================================
+\begin{table}[t]
+\centering
+\fbox{\begin{minipage}[c][3.2cm][c]{0.94\linewidth}\centering\itshape
+[Table~\ref{tab:ood} placeholder] Out-of-distribution generalization on Agentic-MME, AgentVista, and VTC-Bench (none selected for tool-amenability): each backbone w/o tool vs.\ fine-tuned on \dataset.
+\end{minipage}}
+\caption{OOD generalization. Improvements transfer to agentic benchmarks outside the training distribution, controlling for the in-domain tool-amenable selection.}
+\label{tab:ood}
+\end{table}
+
+\subsection{Ablation: Double Rejection Sampling}
 \label{sec:ablation_gain}
+\label{sec:notool_traj}
+% Two distinct claims live in one table; keep them as two paragraphs.
 
-\dataset is produced by intersecting two filters: the teacher trajectory must be answer-correct, and the trajectory must have positive \toolgain (\S\ref{sec:filtering}). We compare this intersection against two ablation corpora: \emph{correctness-only}, which keeps trajectories solely by final answer correctness, and \emph{tool-gain-only}, which keeps trajectories solely by the gain criterion.
+\paragraph{Setup.}
+All variants train Qwen3.5-9B on the same queries for a fixed budget (1{,}971 steps), isolating the retention rule: full \dataset (correctness $\cap$ \toolgain), correctness-only, tool-gain-only, and a no-tool-trajectory SFT.
 
-Table~\ref{tab:ablation} shows that both filters are useful. The intersection corpus is best on all five domains and improves the Qwen3.5-9B average from 32.6 to 45.8. Correctness-only is close but consistently lower (44.1 AVG), while tool-gain-only is weaker still (42.4 AVG). This supports the intended role of the two filters: correctness removes invalid demonstrations, while \toolgain removes trajectories whose tool calls do not materially help solve the query.
+\paragraph{Tool-use supervision beats text-only supervision.}
+Every tool-use variant outperforms the no-tool-trajectory SFT on average (\dataset $45.8$ vs.\ $37.1$, $+8.7$), so the gain comes from the \emph{tools}, not merely from SFT on these (hard) queries.
 
+\paragraph{The filtering strategy matters.}
+The intersection dominates either filter alone: $45.8$ (both) $>44.1$ (correctness-only) $>42.4$ (tool-gain-only), with the widest margins on Table and Visual Search --- evidence that correctness and \toolgain are complementary (correctness removes invalid demos; \toolgain removes causally useless ones).
+
+% ============================================================================
+% TABLE (tab:ablation) --- Rejection-sampling ablation (fixed 1,971 steps).  table*.
+% Source: result.md "Ablation on Rejection Sampling Strategy" block.
+% Cols: variant | setting | Chart | GUI | Table | VisualSearch | Web2HTML | AVG
+% Rows: w/o tool; + \dataset (both); acc_only; toolgain_only; no-tool SFT (w/o tool).
+% ============================================================================
 \begin{table*}[t]
 \centering
-\small
-\setlength{\tabcolsep}{5pt}
-\begin{tabular}{lrrrrrr}
-\toprule
-Corpus (Qwen3.5-9B) & Chart & GUI & Table & Vis.\ Search & Web2HTML & AVG \\
-\midrule
-w/o tool              & 34.6 & 27.1 & 25.8 & 35.6 & 40.1 & 32.6 \\
-\midrule
-correctness-only      & 48.6 & 30.8 & 38.9 & 57.3 & 45.0 & 44.1 \\
-tool-gain-only        & 46.8 & 27.8 & 37.5 & 54.7 & 44.9 & 42.4 \\
-\dataset (both)       & \textbf{49.3} & \textbf{31.6} & \textbf{43.1} & \textbf{59.4} & \textbf{45.5} & \textbf{45.8} \\
-\bottomrule
-\end{tabular}
-\caption{Filtering-strategy ablation. All variants use Qwen3.5-9B and are trained for the same number of optimizer steps. The main \dataset, the intersection of correctness and \toolgain filters, is consistently strongest.}
+\fbox{\begin{minipage}[c][3.0cm][c]{0.96\textwidth}\centering\itshape
+[Table~\ref{tab:ablation} placeholder] Rejection-sampling ablation on Qwen3.5-9B at a fixed step budget: full \dataset (correctness $\cap$ \toolgain) vs.\ correctness-only, tool-gain-only, and no-tool-trajectory SFT.
+\end{minipage}}
+\caption{Double rejection sampling ablation. The correctness $\cap$ \toolgain intersection dominates either filter alone, and all tool-use variants beat no-tool-trajectory SFT.}
 \label{tab:ablation}
 \end{table*}
 
-\subsection{Tool-Use Trajectories vs.\ No-Tool Trajectories}
-\label{sec:notool_traj}
+\subsection{Cross-Domain Transfer and the GUI Exception}
+\label{sec:cross_domain}
+% Folded in from the former Discussion section.
 
-A separate question is whether the gains come from learning tool-use behavior or merely from distilling the teacher's final answers and textual reasoning. To test this, we train a matched \emph{no-tool trajectory SFT} baseline on the same queries, using the teacher's text-only trajectories and evaluating the resulting model without tools.
+\paragraph{Single-domain training transfers, asymmetrically.}
+Fine-tuning Qwen3.5-9B on each single-domain slice and evaluating on all five shows out-of-domain gains (e.g.\ GUI-only raises Visual Search $35.6\!\to\!52.8$; Visual-Search-only raises Table $25.8\!\to\!40.9$), suggesting some behaviors --- localized inspection, grounding evidence before answering --- are reusable.
 
-Table~\ref{tab:notool} shows that tool-use trajectories are substantially better on average: \dataset reaches 45.8 AVG, compared with 37.1 for no-tool trajectory SFT. The advantage is especially large on Visual Search (+29.4) and Table (+13.1), where tool outputs provide new visual evidence. GUI Grounding is the clear exception: no-tool trajectory SFT reaches 40.0, compared with 31.6 for \dataset. We analyze this exception in \S\ref{sec:gui_exception}; it suggests that our current GUI tool-use protocol introduces overhead for a task whose metric rewards direct point prediction.
+\paragraph{No single domain replaces the full mixture.}
+Full \dataset is best on average and on four of five domains, so the multi-domain mix is doing real work.
 
+\paragraph{The GUI exception (a diagnostic).}
+GUI is the only domain where both the GUI-only slice ($36.3$) and no-tool-trajectory SFT ($40.0$) beat the full corpus ($31.6$): under a point-in-bbox metric a single precise click is served better by direct imitation than by a multi-step crop$\to$locate$\to$\texttt{computer\_use} protocol, and non-GUI slices dilute GUI action patterns. We read this as a pointer to better action interfaces and mixture balancing rather than a failure of tool-use supervision (\dataset still lifts GUI $27.1\!\to\!31.6$). Deeper discussion in Limitations.
+
+% ============================================================================
+% TABLE (tab:cross) --- Cross-domain transfer (single-domain slices).  table*.
+% Source: former analysis.tex tab:cross.
+% Cols: Train slice (Qwen3.5-9B) | Chart | GUI | Table | Vis. Search | Web2HTML | AVG
+% Rows: w/o tool; then Chart / GUI / Table / Visual Search / Web2HTML single slices;
+%       then full \dataset. Bold best per evaluation column.
+% ============================================================================
 \begin{table*}[t]
 \centering
-\small
-\setlength{\tabcolsep}{5pt}
-\begin{tabular}{llrrrrrr}
-\toprule
-Training data (Qwen3.5-9B) & Eval & Chart & GUI & Table & Vis.\ Search & Web2HTML & AVG \\
-\midrule
-none                    & w/o tool  & 34.6 & 27.1 & 25.8 & 35.6 & 40.1 & 32.6 \\
-no-tool trajectories    & w/o tool  & 42.1 & \textbf{40.0} & 30.0 & 30.0 & 43.8 & 37.1 \\
-\dataset trajectories   & with tool & \textbf{49.3} & 31.6 & \textbf{43.1} & \textbf{59.4} & \textbf{45.5} & \textbf{45.8} \\
-\bottomrule
-\end{tabular}
-\caption{Tool-use trajectories versus text-only teacher trajectories. The tool-use corpus wins on four of five domains and by 8.7 AVG points, while GUI Grounding favors direct no-tool trajectory imitation.}
-\label{tab:notool}
+\fbox{\begin{minipage}[c][3.0cm][c]{0.96\textwidth}\centering\itshape
+[Table~\ref{tab:cross} placeholder] Cross-domain transfer: each single-domain slice of \dataset trained for three epochs and evaluated on all five domains, with the full corpus for reference.
+\end{minipage}}
+\caption{Cross-domain transfer. Single-domain training often improves other domains but no slice replaces the full corpus; GUI is the exception.}
+\label{tab:cross}
 \end{table*}
