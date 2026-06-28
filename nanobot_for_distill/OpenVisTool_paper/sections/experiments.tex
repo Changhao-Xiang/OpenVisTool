@@ -45,7 +45,7 @@ We fine-tune four backbones spanning two model families and 4B--27B scale --- Qw
 ``With tool'' runs the fine-tuned model as a tool-using agent over the shared visual toolset (up to a fixed tool-round budget); ``w/o tool'' runs the same backbone single-pass without tools. Metric is per-domain accuracy and the average, at avg@$k$.
 
 \paragraph{Baselines.}
-Three groups: (i) the \emph{no-tool} base backbones; (ii) released visual tool-use models \textbf{Thyme} and \textbf{DeepEyesV2}, both on Qwen2.5-VL-7B --- a base mismatch with our students, so we frame this as a comparison to \emph{released models}, not a controlled comparison \TODO{Optionally train \dataset on Qwen2.5-VL-7B for an apples-to-apples row.}; and (iii) data-variant baselines (correctness-only, tool-gain-only, and a no-tool-trajectory SFT on the same queries), defined here and used in \S\ref{sec:ablation_gain}.
+    Three groups: (i) the \emph{no-tool} base backbones; (ii) released visual tool-use models \textbf{Thyme} and \textbf{DeepEyesV2}, both on Qwen2.5-VL-7B --- a base mismatch with our students, so we frame this as a comparison to \emph{released models}, not a controlled comparison \TODO{Optionally train \dataset on Qwen2.5-VL-7B for an apples-to-apples row.}; and (iii) data-variant baselines (correctness-only, tool-use-gain-only, and a no-tool-trajectory SFT on the same queries), defined here and used in \S\ref{sec:ablation_gain}.
 
 \subsection{Main Results}
 \label{sec:main_results}
@@ -106,26 +106,26 @@ One cell regresses (Qwen3-VL-8B on AgentVista, $8.6\!\to\!6.2$); the trend is ot
 % Two distinct claims live in one table; keep them as two paragraphs.
 
 \paragraph{Setup.}
-All variants train Qwen3.5-9B on the same queries for a fixed budget (1{,}971 steps), isolating the retention rule: full \dataset (correctness $\cap$ \toolgain), correctness-only, tool-gain-only, and a no-tool-trajectory SFT.
+All variants train Qwen3.5-9B on the same queries for a fixed budget (1{,}971 steps), isolating the retention rule: full \dataset (correctness $\cap$ positive tool-use gain), correctness-only, tool-use-gain-only, and a no-tool-trajectory SFT.
 
 \paragraph{Tool-use supervision beats text-only supervision.}
 Every tool-use variant outperforms the no-tool-trajectory SFT on average (\dataset $45.8$ vs.\ $37.1$, $+8.7$), so the gain comes from the \emph{tools}, not merely from SFT on these (hard) queries.
 
 \paragraph{The filtering strategy matters.}
-The intersection dominates either filter alone: $45.8$ (both) $>44.1$ (correctness-only) $>42.4$ (tool-gain-only), with the widest margins on Table and Visual Search --- evidence that correctness and \toolgain are complementary (correctness removes invalid demos; \toolgain removes causally useless ones).
+The intersection dominates either filter alone: $45.8$ (both) $>44.1$ (correctness-only) $>42.4$ (tool-use-gain-only), with the widest margins on Table and Visual Search --- evidence that the correctness filter and the tool-use gain filter are complementary (correctness removes invalid demos; tool-use gain removes causally useless ones).
 
 % ============================================================================
 % TABLE (tab:ablation) --- Rejection-sampling ablation (fixed 1,971 steps).  table*.
 % Source: result.md "Ablation on Rejection Sampling Strategy" block.
 % Cols: variant | setting | Chart | GUI | Table | VisualSearch | Web2HTML | AVG
-% Rows: w/o tool; + \dataset (both); acc_only; toolgain_only; no-tool SFT (w/o tool).
+% Rows: w/o tool; + \dataset (both); acc_only; tool_use_gain_only; no-tool SFT (w/o tool).
 % ============================================================================
 \begin{table*}[t]
 \centering
 \fbox{\begin{minipage}[c][3.0cm][c]{0.96\textwidth}\centering\itshape
-[Table~\ref{tab:ablation} placeholder] Rejection-sampling ablation on Qwen3.5-9B at a fixed step budget: full \dataset (correctness $\cap$ \toolgain) vs.\ correctness-only, tool-gain-only, and no-tool-trajectory SFT.
+[Table~\ref{tab:ablation} placeholder] Rejection-sampling ablation on Qwen3.5-9B at a fixed step budget: full \dataset (correctness $\cap$ positive tool-use gain) vs.\ correctness-only, tool-use-gain-only, and no-tool-trajectory SFT.
 \end{minipage}}
-\caption{Double rejection sampling ablation. The correctness $\cap$ \toolgain intersection dominates either filter alone, and all tool-use variants beat no-tool-trajectory SFT.}
+\caption{Double rejection sampling ablation. The correctness $\cap$ positive tool-use gain intersection dominates either filter alone, and all tool-use variants beat no-tool-trajectory SFT.}
 \label{tab:ablation}
 \end{table*}
 

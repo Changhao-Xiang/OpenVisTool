@@ -30,7 +30,7 @@
 | Qwen3.5 9B         | w/o tool  | 34.6  | 27.1 | 25.8  | 35.6         | 40.1     | 32.6 |
 |  + openvistool 42k | with tool | 49.3  | 31.6 | 43.1  | 59.4         | 45.5     | 45.8 |
 |  acc_only          | with tool | 48.6  | 30.8 | 38.9  | 57.3         | 45.0     | 44.1 |
-|  toolgain_only     | with tool | 46.8  | 27.8 | 37.5  | 54.7         | 44.9     | 42.4 |
+|  tool_use_gain_only | with tool | 46.8  | 27.8 | 37.5  | 54.7         | 44.9     | 42.4 |
 |  no tool sft       | w/o tool  | 42.1  | 40.0 | 30.0  | 30.0         | 43.8     | 37.1 |
 
 ## Cross Domain Analysis
