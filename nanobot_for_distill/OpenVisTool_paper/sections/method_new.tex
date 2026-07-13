@@ -1,0 +1,42 @@
+% Main method figure. The final artwork should combine the pipeline and the central
+% conceptual contrast, since both are easier to understand visually than as prose.
+\begin{figure*}[t]
+    \centering
+    \fbox{\begin{minipage}[c][4.0cm][c]{0.96\textwidth}
+    \centering\itshape
+    [Figure~\ref{fig:pipeline} placeholder]\\[3pt]
+    Left-to-right data funnel: multi-domain source queries $\rightarrow$ no-tool difficulty screen with a fixed student-level probe $\rightarrow$ teacher rollout using one shared visual toolset and domain-guided instructions $\rightarrow$ answer-correctness filter $\rightarrow$ observation-utility filter $\rightarrow$ \dataset. Show representative operations beneath the rollout stage (crop and align for Chart/Table, crop and localize for GUI/Visual Search, render and revise for Web2HTML). Add a small contrastive inset at the final filter: a spurious trajectory is answer-correct but leaves probe performance unchanged after conditioning on its observations, whereas an instructive trajectory supplies missing visual evidence and improves probe performance.
+    \end{minipage}}
+    \caption{The \method data pipeline. Query screening identifies examples for which external visual evidence has room to help; domain-guided rollout encourages the teacher to acquire the right kind of evidence; the final two filters retain trajectories that are both outcome-valid and evidence-useful.}
+    \label{fig:pipeline}
+\end{figure*}
+
+\section{\method}
+\label{sec:method}
+
+\subsection{What Makes a Trajectory Instructive?}
+
+An \emph{instructive trajectory} is a tool-use trajectory whose observations provide evidence that helps a student model answer the same query more reliably. Correctness alone does not provide this guarantee. A strong teacher may derive the answer directly from the original image or its learned priors while still making tool calls because the synthesis prompt encourages tool use. The resulting trace is successful but spurious: imitating it teaches the student that tool calls accompany correct answers, rather than when and how external evidence should be acquired. Conversely, retaining a trajectory with useful observations but an incorrect outcome would propagate flawed reasoning. We therefore retain only the intersection of outcome validity and observation utility.
+
+Figure~\ref{fig:pipeline} turns this definition into a three-stage pipeline. We first select queries that a base model cannot solve reliably without tools, then guide a teacher to acquire evidence suited to each domain's visual bottleneck, and finally test whether the resulting trajectory is correct and whether its observations close the apparent evidence gap. The difficulty screen identifies queries with room for improvement; the final observation test verifies that the recorded evidence realizes that opportunity.
+
+\subsection{Query Selection: Identifying an Evidence Gap}
+\label{sec:data}
+
+We collect candidate queries from five domains---Chart, Table, GUI Grounding, Visual Search, and Web-to-HTML---that span complementary visual bottlenecks, including dense labels, small interface elements, cluttered scenes, and layout reconstruction. If a base model already solves a query reliably from the static image, subsequent tool use is likely to provide little signal about when evidence acquisition is necessary. We use Qwen3.5-9B \citep{qwen35blog} as a fixed screening model, run it four times without tools, and retain a query only if it succeeds on at most two attempts. This screen removes examples unlikely to benefit from additional visual evidence and caches a no-tool baseline for evaluating each synthesized trajectory. Source-specific preprocessing and corpus composition are reported in Appendix~\ref{app:datacard}.
+
+\subsection{Trajectory Synthesis: Acquiring the Missing Evidence}
+\label{sec:synthesis}
+
+For every retained query, Qwen3.5-Plus acts as a teacher agent with a shared visual tool interface. At each turn, it reasons about what remains uncertain and may invoke a tool to resolve that uncertainty; when it does, the resulting observation is returned to the agent for the next turn. The interaction continues until the teacher produces a final answer, and the candidate trajectory records the complete interaction.
+
+A generic instruction to ``use tools when helpful'' can still elicit arbitrary or decorative calls. We instead guide the teacher with domain-specific instructions tailored to the characteristic visual bottleneck of each task family. Chart and Table trajectories localize and align relevant regions before reading or computing; GUI Grounding and Visual Search trajectories crop, localize, and verify small targets; Web-to-HTML trajectories render a draft, compare it with the reference, and revise it. The underlying tool interface remains shared across domains, so the supervision emphasizes reusable evidence-acquisition skills rather than task-specific APIs. Full instructions and representative trajectories are provided in Appendix~\ref{app:prompts} and Appendix~\ref{app:qualitative}.
+
+\subsection{Trajectory Selection: Verifying Correctness and Evidence Value}
+\label{sec:filtering}
+
+We first enforce outcome validity by rejecting trajectories whose final answer fails the domain-specific evaluator. Depending on the domain, we use normalized text or numeric matching, point-in-box evaluation, or rendered-page comparison with a VLM judge. We also remove malformed sessions, such as traces with missing observations or invalid file references.
+
+We then test observation utility separately from the teacher's reasoning. For each correct trajectory, we extract its tool observations, prepend only those observations to the context of the same student model used in query selection, and ask the model to answer the original query four more times. A trajectory passes when the observations improve its empirical success rate (avg@4) over the cached no-tool baseline. Excluding the teacher's reasoning and tool calls prevents the student from copying the teacher's solution trace and better isolates the information supplied by the observations. Reusing the same student and evaluator makes the two success rates directly comparable, while probing a student model reduces the ceiling effects that would arise from testing the stronger teacher.
+
+The trajectories that pass both tests form \dataset. Each retained sample preserves the reasoning, tool arguments, observations, and final answer, allowing supervised fine-tuning to teach both when to seek evidence and how to incorporate it. Detailed rollout settings and filter hyperparameters are provided in Appendix~\ref{app:pipeline} and Appendix~\ref{app:hyperparams}.
