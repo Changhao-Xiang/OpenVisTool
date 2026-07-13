@@ -1,0 +1,51 @@
+\begin{table*}[t]
+\centering
+% \caption{Main results on \benchname. \dataset{} yields universal improvements across all backbones (4B--27B) and domains, enabling open-source models to rival proprietary ones (e.g., GPT-5.5, Kimi K2.6). Existing narrow-domain tool-use models (Thyme, DeepEyes V2) fall below even the no-tool baseline.}
+\caption{Main results on OpenVisTool-Bench. Training with OpenVisTool-42K consistently improves all backbones (4B--27B) by \textbf{+8.9 to +12.5} average points in-domain, lifting open-source models to closed-source levels. Gains generalize to out-of-distribution benchmarks (+10.3 on VTC-Bench for Qwen3.5-27B). In contrast, existing narrow-domain tool-use models (Thyme, DeepEyes V2) underperform even the no-tool baseline.}
+\label{tab:main}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{ll ccccc c cc}
+\toprule
+& & \multicolumn{5}{c}{\textbf{In-Domain}} & & \multicolumn{2}{c}{\textbf{Out-of-Distribution}} \\
+\cmidrule(lr){3-7} \cmidrule(lr){9-10}
+\textbf{Model} & \textbf{Setting} & \textbf{Chart} & \textbf{GUI} & \textbf{Table} & \textbf{VisualSearch} & \textbf{Web2HTML} & \textbf{AVG} & \textbf{Agentic-MME} & \textbf{VTC-Bench} \\
+\midrule
+\multicolumn{10}{l}{\emph{Closed-source models}} \\
+\multirow{2}{*}{GPT-5.5}
+             & w/o tool  & 63.3 & 17.7 & 48.9 & 27.7 & 51.7 & \cellcolor{blue!10}41.9 & 36.8 & \underline{43.6} \\
+             & with tool & \textbf{66.6} & 24.2 & \textbf{53.9} & 46.2 & \textbf{54.3} & \cellcolor{blue!10}\underline{49.0} & 37.1 & \textbf{46.6} \\
+\multirow{2}{*}{Kimi K2.6}
+             & w/o tool  & 50.9 & 17.1 & 34.4 & 13.8 & 49.4 & \cellcolor{blue!10}37.6 & 35.5 & 35.0 \\
+             & with tool & \underline{64.3} & 18.8  & \underline{51.6} & 49.8 & \underline{53.6} & \cellcolor{blue!10}45.9 & 39.3 & 38.0 \\
+\midrule
+\multicolumn{10}{l}{\emph{Released tool-use models}} \\
+Thyme        & with tool & 19.8 & 0.0 & 17.9 & 39.2 & 14.3 & \cellcolor{blue!10}18.2 & 23.2 & 27.8 \\
+DeepEyes V2  & with tool & 20.9 & 1.7 & 20.4 & 31.8 & 2.4  & \cellcolor{blue!10}15.5 & 25.4 & 21.0 \\
+\midrule
+\multicolumn{10}{l}{\emph{Qwen3.5-4B}} \\
+             & w/o tool  & 31.6 & 22.0 & 25.4 & 34.0 & 40.8 & \cellcolor{blue!10}30.8 & 29.9 & 27.5 \\
+             & with tool & 32.5 & 23.5 & 32.3 & 39.6 & 41.6 & \cellcolor{blue!10}33.9 & 31.0 & 32.9 \\
+\rowcolor{gray!15}
+\quad + \dataset~(Ours) & with tool & 43.0\imp{11.4} & 27.4\imp{5.4} & 37.3\imp{11.9} & 56.6\imp{22.6} & 43.4\imp{2.6} & \cellcolor{blue!10}41.5\imp{10.7} & 34.5\imp{4.6} & 38.8\imp{11.3} \\
+\midrule
+\multicolumn{10}{l}{\emph{Qwen3-VL-8B-Instruct}} \\
+             & w/o tool  & 22.1 & 13.0 & 26.7 & 31.8 & 26.5 & \cellcolor{blue!10}24.0 & 25.6 & 28.2 \\
+             & with tool & 20.9 & 12.6 & 24.6 & 30.2 & 28.1 & \cellcolor{blue!10}23.3 & 28.2 & 25.2 \\
+\rowcolor{gray!15}
+\quad + \dataset~(Ours) & with tool & 26.1\imp{4.0} & 19.7\imp{6.7} & 35.3\imp{8.6} & 50.7\imp{18.9} & 32.9\imp{6.4} & \cellcolor{blue!10}32.9\imp{8.9} & 32.3\imp{6.7} & 29.1\imp{0.9} \\
+\midrule
+\multicolumn{10}{l}{\emph{Qwen3.5-9B}} \\
+             & w/o tool  & 34.6 & 27.1 & 29.0 & 35.6 & 40.1 & \cellcolor{blue!10}33.3 & 32.7 & 30.1 \\
+             & with tool & 28.4 & 24.8 & 26.8 & 38.7 & 42.0 & \cellcolor{blue!10}32.1 & 33.7 & 23.8 \\
+\rowcolor{gray!15}
+\quad + \dataset~(Ours) & with tool & 49.3\imp{14.7} & \textbf{31.6}\imp{4.5} & 43.1\imp{14.1} & \textbf{59.4}\imp{23.8} & 45.5\imp{5.4} & \cellcolor{blue!10}45.8\imp{12.5} & \textbf{41.6}\imp{8.9} & 41.4\imp{11.3} \\
+\midrule
+\multicolumn{10}{l}{\emph{Qwen3.5-27B}} \\
+             & w/o tool  & 45.7 & 28.9 & 29.8 & 43.2 & 46.6 & \cellcolor{blue!10}38.8 & 37.1 & 34.9 \\
+             & with tool & 47.7 & \underline{29.1} & 43.3 & 54.7 & 44.3 & \cellcolor{blue!10}43.8 & 39.8 & 40.7 \\
+\rowcolor{gray!15}
+\quad + \dataset~(Ours) & with tool & 60.7\imp{15.0} & \textbf{31.6}\imp{2.7} & 48.2\imp{18.4} & \underline{57.3}\imp{14.1} & 48.7\imp{2.1} & \cellcolor{blue!10}\textbf{49.3}\imp{10.5} & \underline{41.1}\imp{4.0} & \underline{45.2}\imp{10.3} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}

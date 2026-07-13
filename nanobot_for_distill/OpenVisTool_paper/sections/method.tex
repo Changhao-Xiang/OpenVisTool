@@ -28,52 +28,101 @@ End-to-end \method pipeline: five-domain source corpora $\rightarrow$ difficulty
 \label{fig:pipeline}
 \end{figure*}
 
-\subsection{Overview and Notation}
+% \subsection{Overview and Notation}
+\subsection{Problem Formulation and Notation}
 \label{sec:overview}
+A training instance is a query $q=(x,t)$ pairing one or more images $x$ with a text instruction $t$, from a domain $d\in\{\textsc{Chart},\textsc{GUI},\textsc{Table},\textsc{VisualSearch},\textsc{Web2HTML}\}$ with reference answer $a^\star$. Rolling out a tool-using teacher $\mathcal{T}$ yields a \emph{trajectory} $\zeta=(r_1,c_1,o_1,\dots,r_m,c_m,o_m,\hat{a})$ that interleaves reasoning steps $r_i$, tool calls $c_i$, and observations $o_i$, ending in an answer $\hat{a}$. An observation is the new evidence a tool surfaces---a crop, an annotated overlay, a color mask, a rendered screenshot, or a computed value---produced by a shared visual toolset (detailed in \S\ref{sec:synthesis}).
 
-A training instance is a query $q=(x,t)$ pairing one or more images $x$ with a text instruction $t$, from a domain $d\in\{\textsc{Chart},\textsc{GUI},\textsc{Table},\textsc{VisualSearch},\textsc{Web2HTML}\}$ with reference answer $a^\star$. Rolling out a tool-using teacher $\mathcal{T}$ yields a \emph{trajectory} $\zeta=(r_1,c_1,o_1,\dots,r_m,c_m,o_m,\hat{a})$ that interleaves reasoning steps $r_i$, tool calls $c_i$, and observations $o_i$, ending in an answer $\hat{a}$. An observation is the new evidence a tool surfaces---a crop, an annotated overlay, a color mask, a rendered screenshot, or a computed value---that the teacher could not read off the original image in one pass.
+\paragraph{The spurious supervision problem.}
+Existing pipelines retain a trajectory whenever $\hat{a}=a^\star$, implicitly assuming that every answer-correct demonstration provides useful supervision. This conflates correctness with utility. A strong teacher can often reach the right answer without relying on its tool observations---via parametric knowledge or low-resolution cues already in the static encoding. The resulting trajectories are answer-correct yet \emph{spurious}: tools are invoked, but the observations do not causally contribute to the outcome. Training on such trajectories teaches correlation (tool calls co-occur with correct answers) rather than causation (tool observations \emph{enable} correct answers).
 
-We retain only \emph{useful} tool use, via two conditions. (C1) The query should \emph{benefit} from tools---a base solver should not already answer it from a static view---a property of $q$ enforced as a pre-screen \emph{before} synthesis (\S\ref{sec:data}). (C2) The recorded observations should \emph{causally improve} solving it, not merely co-occur with a correct answer---a property of $\zeta$ enforced \emph{after} synthesis (\S\ref{sec:filtering}). Throughout, a fixed probe $\pi_0$ (Qwen3.5-9B) is the reference base solver and a strong teacher $\mathcal{T}$ (Qwen3.5-Plus) does the rollout; the recipe is teacher-agnostic.
+\paragraph{Instructive trajectories.}
+We define a trajectory $\zeta$ as \emph{instructive} for query $q$ iff it satisfies two conditions jointly:
+\begin{itemize}
+    \item \textbf{(C1) Outcome validity:} $\hat{a}$ matches $a^\star$---the model is not trained on erroneous reasoning.
+    \item \textbf{(C2) Causal utility:} the observations $o_{1:m}$ causally contribute to reaching $a^\star$---counterfactually removing them should degrade performance.
+\end{itemize}
+Together, C1 and C2 shift the retention question from ``did this trajectory produce a correct answer?''\ to ``did the tool observations \emph{cause} the correct answer?''
 
-\paragraph{A shared visual toolset.}
-All domains expose the same toolset, so the model learns reusable operations rather than a per-task interface: \emph{geometric transforms} (\texttt{crop}, \texttt{locate\_in\_crop}, \texttt{rotate}/\texttt{flip}), \emph{annotation aids} (\texttt{draw\_bbox}, \texttt{draw\_line}), \emph{readability enhancement} (\texttt{enhance\_contrast}, \texttt{adjust\_brightness}), \emph{color and structure analysis} (\texttt{in\_range\_color}, \texttt{find\_contours}, \texttt{template\_match}), and \emph{computation and action} (\texttt{exec}/\texttt{write\_file}, \texttt{render\_html}, \texttt{computer\_use}). What differs across domains is which operations are canonical and in what order they fire.
+\paragraph{Operationalization.}
+Testing C2 directly on the teacher $\mathcal{T}$ is uninformative: a strong teacher is often correct regardless of observations. We instead use a weaker \emph{probe} $\pi_0$ (Qwen3.5-9B) that is sensitive to evidence gaps. We compare $\pi_0$'s accuracy on $q$ without observations against its accuracy when the teacher's $o_{1:m}$ are prepended to its context; a positive gain certifies that the observations carry otherwise-unavailable evidence. The recipe is teacher-agnostic; $\mathcal{T}$ (Qwen3.5-Plus) performs rollout throughout.
 
-\subsection{Source Data and Difficulty Pre-Screen}
+This criterion is realized through three stages. \textbf{Stage~1} (\S\ref{sec:data}) ensures the problem \emph{requires} tools: queries $\pi_0$ already solves are discarded, establishing that an evidence gap exists. \textbf{Stage~2} (\S\ref{sec:synthesis}) ensures tools are used \emph{coherently}: per-domain patterns steer the teacher toward bottleneck-resolving observations. \textbf{Stage~3} (\S\ref{sec:filtering}) verifies C1$\,\cap\,$C2: dual rejection keeps only trajectories that are answer-correct \emph{and} whose observations measurably improve $\pi_0$. To evaluate whether models trained on instructive trajectories genuinely acquire tool-use ability—rather than memorizing domain-specific patterns—we additionally construct OpenVisTool-Bench, an evaluation suite that isolates tool-decisive instances (§4.1).
+
+% We retain only \emph{useful} tool use, via two conditions. (C1) The query should \emph{benefit} from tools---a base solver should not already answer it from a static view---a property of $q$ enforced as a pre-screen \emph{before} synthesis (\S\ref{sec:data}). (C2) The recorded observations should \emph{causally improve} solving it, not merely co-occur with a correct answer---a property of $\zeta$ enforced \emph{after} synthesis (\S\ref{sec:filtering}). Throughout, a fixed probe $\pi_0$ (Qwen3.5-9B) is the reference base solver and a strong teacher $\mathcal{T}$ (Qwen3.5-Plus) does the rollout; the recipe is teacher-agnostic.
+
+% \paragraph{A shared visual toolset.}
+% All domains expose the same toolset, so the model learns reusable operations rather than a per-task interface: \emph{geometric transforms} (\texttt{crop}, \texttt{locate\_in\_crop}, \texttt{rotate}/\texttt{flip}), \emph{annotation aids} (\texttt{draw\_bbox}, \texttt{draw\_line}), \emph{readability enhancement} (\texttt{enhance\_contrast}, \texttt{adjust\_brightness}), \emph{color and structure analysis} (\texttt{in\_range\_color}, \texttt{find\_contours}, \texttt{template\_match}), and \emph{computation and action} (\texttt{exec}/\texttt{write\_file}, \texttt{render\_html}, \texttt{computer\_use}). What differs across domains is which operations are canonical and in what order they fire.
+
+% \subsection{Source Data and Difficulty Pre-Screen}
+\subsection{Stage 1: Ensuring Tool Necessity}
 \label{sec:data}
+
+Causal utility (C2) is only meaningful when an evidence gap exists: if the probe $\pi_0$ already answers $q$ reliably from a static view, any tool observation is redundant---it may correlate with correctness but cannot \emph{cause} it. Stage~1 therefore establishes the causal premise by retaining only queries that exhibit a genuine perception bottleneck, i.e., where the base solver's visual encoding is insufficient and tools have the opportunity to supply otherwise-unavailable evidence.
+
 
 \paragraph{Source corpora.}
 We assemble \method from public corpora, each domain stressing a distinct visual bottleneck: \textsc{Chart} from ChartVerse-SFT~\citep{chartverse}; \textsc{Table} from CoSyn-400K~\citep{cosyn} and TABLET~\citep{tablet}; \textsc{GUI} from OS-Atlas~\citep{osatlas}, AgentNet~\citep{agentnet}, and UGround~\citep{uground}; \textsc{VisualSearch} from Vero-600K~\citep{vero} and DeepEyesV2~\citep{hong2026deepeyesv2}; and \textsc{Web2HTML} from VinciCoder~\citep{vincicoder}. We keep gold answers $a^\star$ and re-purpose the images as queries. For the grounding-heavy domains we further prefer high-resolution images whose target occupies a small fraction of the frame---the regime where a static encoding is weakest and a crop-and-zoom recovers the detail (appendix).
 
+
 \paragraph{Difficulty pre-screen.}
-We remove queries a base solver already answers without tools. For each $q$ we run $k$ no-tool rollouts with $\pi_0$ (temperature $0.7$, $k{=}4$), scored by a domain-appropriate evaluator $\mathcal{E}_d\in\{0,1\}$ (\S\ref{sec:filtering}):
+% We remove queries a base solver already answers without tools. For each $q$ we run $k$ no-tool rollouts with $\pi_0$ (temperature $0.7$, $k{=}4$), scored by a domain-appropriate evaluator $\mathcal{E}_d\in\{0,1\}$ (\S\ref{sec:filtering}):
+
+For each candidate $q$ we run $k$ no-tool rollouts with $\pi_0$ (temperature $0.7$, $k{=}4$), scored by a domain-appropriate evaluator $\mathcal{E}_d\in\{0,1\}$ (\S\ref{sec:filtering}):
 \begin{equation}
 \bar{p}_0(q)\;=\;\frac{1}{k}\sum_{j=1}^{k}\mathcal{E}_d\!\left(\pi_0(q)^{(j)},\,a^\star\right).
 \label{eq:nopt}
 \end{equation}
-We keep $q$ only when $\bar{p}_0(q)\le 0.5$ (uniform across domains) and cache $\bar{p}_0(q)$ as the baseline for the tool-use gain test.
+% We keep $q$ only when $\bar{p}_0(q)\le 0.5$ (uniform across domains) and cache $\bar{p}_0(q)$ as the baseline for the tool-use gain test.
+We retain $q$ only when $\bar{p}_0(q)\le 0.5$ (uniform across domains), indicating that $\pi_0$ cannot reliably solve it without external evidence. The cached $\bar{p}_0(q)$ simultaneously serves as the no-tool baseline for the causal gain test in Stage~3 (\S\ref{sec:filtering}). The resulting query pool forms the eligible population over which trajectory synthesis and causal verification operate.
 
-\subsection{Trajectory Synthesis with Per-Domain Patterns}
+% \subsection{Trajectory Synthesis with Per-Domain Patterns}
+\subsection{Stage 2: Structured Trajectory Synthesis}
 \label{sec:synthesis}
 
-A generic ``use tools when helpful'' prompt elicits decorative or missing calls: the teacher may answer correctly while its calls are incidental, or skip the operation a query needs. We instead give each domain a \emph{tool-use pattern}---a short sequence of canonical operations keyed to its visual bottleneck---and steer the teacher to follow it; one canonical trajectory per domain is shown in appendix Figure~\ref{fig:patterns}. \textbf{Chart/Table}: \texttt{crop} the subplot or cell block, \texttt{draw\_line}/\texttt{draw\_bbox} to align a value with its axis tick or a row with its header, \texttt{in\_range\_color} for legends or highlighted cells, \texttt{exec} for arithmetic. \textbf{GUI}: \texttt{crop} a tight window, click in local coordinates, \texttt{locate\_in\_crop} to remap into the $0$--$1000$ space, and end in one \texttt{computer\_use} click. \textbf{Visual Search}: \texttt{crop} and \texttt{draw\_bbox} to verify and track candidates, \texttt{in\_range\_color} for color-defined targets, \texttt{exec} to aggregate counts. \textbf{Web-to-HTML}: \texttt{write\_file} a draft, \texttt{render\_html}, name the discrepancies against the reference, \texttt{edit\_file}, and re-render until they match.
+\paragraph{Why domain-guided patterns.}
+A naive approach lets the teacher $\mathcal{T}$ use tools freely. In pilot studies, over 70\% of such trajectories are \emph{decorative}---tools are invoked but their observations do not resolve the actual perception bottleneck, yielding high C2 rejection rates and low data efficiency. We instead steer synthesis with \emph{per-domain patterns}: structured operation sequences derived from the principle that each domain's pattern should target its characteristic visual bottleneck with the minimal tool operations that resolve it. For example, \textsc{GUI} queries typically fail because a small widget is indistinguishable at the static encoding resolution; the corresponding pattern therefore prescribes \emph{detect $\to$ crop-and-zoom $\to$ re-read}, directly supplying the missing fine-grained evidence. \TODO{Maybe use a figure to illustrate this?} All five domains and full prompt templates are summarized in Appendix \ref{app:prompts}. All domains share a single toolset---crop, overlay, color-mask, render, and compute---ensuring that cross-domain transfer experiments (\S\ref{sec:cross_domain}) reflect genuine skill generalization rather than differences in tool interfaces.
+
+\paragraph{Synthesis procedure.}
+Given a query $q$ that passed Stage~1, we prompt $\mathcal{T}$ with the domain-specific pattern and the shared tool API, requesting a multi-step trajectory $\zeta$. The pattern acts as a soft constraint: it specifies which bottleneck to address and which operations are expected, but allows $\mathcal{T}$ to adapt the number of steps and to skip unnecessary calls. We illustrate with \textsc{GUI}: the teacher first calls \texttt{detect} to localize candidate elements, then \texttt{crop\_zoom} on the highest-confidence region, and finally re-reads the zoomed patch to extract the widget label---each observation progressively narrows the evidence gap identified in Stage~1. Trajectories that deviate entirely from the prescribed pattern (e.g., invoking only \texttt{compute} for a grounding task) are discarded before entering Stage~3, as they are unlikely to pass causal verification.
+
+% A generic ``use tools when helpful'' prompt elicits decorative or missing calls: the teacher may answer correctly while its calls are incidental, or skip the operation a query needs. We instead give each domain a \emph{tool-use pattern}---a short sequence of canonical operations keyed to its visual bottleneck---and steer the teacher to follow it; one canonical trajectory per domain is shown in appendix Figure~\ref{fig:patterns}. \textbf{Chart/Table}: \texttt{crop} the subplot or cell block, \texttt{draw\_line}/\texttt{draw\_bbox} to align a value with its axis tick or a row with its header, \texttt{in\_range\_color} for legends or highlighted cells, \texttt{exec} for arithmetic. \textbf{GUI}: \texttt{crop} a tight window, click in local coordinates, \texttt{locate\_in\_crop} to remap into the $0$--$1000$ space, and end in one \texttt{computer\_use} click. \textbf{Visual Search}: \texttt{crop} and \texttt{draw\_bbox} to verify and track candidates, \texttt{in\_range\_color} for color-defined targets, \texttt{exec} to aggregate counts. \textbf{Web-to-HTML}: \texttt{write\_file} a draft, \texttt{render\_html}, name the discrepancies against the reference, \texttt{edit\_file}, and re-render until they match.
 
 We realize the patterns through an agent loop (up to $30$ tool rounds): a per-domain instruction injected into the teacher's system prompt gives each tool a concrete trigger and asks it to attach a hypothesis to every call and to call only when it reduces ambiguity, suppressing gratuitous use. Each query runs in an isolated workspace with relativized paths, so trajectories carry no host-specific absolute paths; full prompts are in the appendix.
 
-\subsection{Double Rejection Sampling}
+% \subsection{Double Rejection Sampling}
+
+\subsection{Stage 3: Supervision Quality Verification via Dual Rejection}
 \label{sec:filtering}
+% We formulate effective tool-use supervision as satisfying two necessary conditions:
+% the trajectory must (1)~produce a correct answer, and (2)~contain observations that
+% \emph{causally} improve the model's reasoning. We apply \emph{dual rejection sampling},
+% retaining only trajectories that pass both criteria.
 
-The difficulty pre-screen acts on queries before synthesis. We now apply \emph{double rejection sampling} to the synthesized trajectories, keeping the \emph{intersection} of two filters.
+We retain a synthesized trajectory only if it satisfies two criteria jointly: \textbf{C1 (Correctness)}---the final answer $\hat{a}$ matches the ground truth $a^*$; and \textbf{C2 (Causal Utility)}---the tool observations genuinely improve visual reasoning rather than serving as decoration. C1 is operationalized straightforwardly via answer matching (rule-based for Chart, Table, and Visual Search; point-in-box for GUI; LLM-judged for free-form answers; render-based VLM comparison for Web2HTML). The key methodological contribution of this work lies in the operationalization of C2: the \emph{observation injection test}.
 
-\paragraph{Correctness.}
-A trajectory is retained only if its final answer $\hat{a}$ matches $a^\star$ under $\mathcal{E}_d$, via three backends: rule-based matching (normalized string/number with tolerance for Chart, Table, and Visual Search; point-in-box for GUI), an LLM judge (Qwen3.5-27B) for free-form answers, and a render-based VLM judge for Web-to-HTML (rendered HTML vs.\ reference). Quality rules additionally reject malformed demonstrations---host absolute paths, missing images, or budget exhaustion without an answer.
-
-\paragraph{Tool-Use Gain.}
-Correctness alone cannot tell whether the tools \emph{mattered}: a teacher can answer correctly while its observations are decorative. We extract the observations $o_{1:m}$ from a correct trajectory, prepend them---without the teacher's reasoning---to $\pi_0$'s context for the same query, and recompute the pass rate
+\paragraph{Observation injection test.}
+The core question C2 asks is: \emph{do the recorded observations carry visual evidence that is itself causally useful?} We answer this through an interventionist design. Given a trajectory with observations $o_{1:m}$, we \emph{inject} only $o_{1:m}$---without the teacher's reasoning or tool calls---into the student-level probe model $\pi_0$'s context and measure its pass rate $\bar{p}_{\text{pre}}(q)$ over $k$ samples:
 \begin{equation}
-\bar{p}_{\mathrm{pre}}(q)\;=\;\frac{1}{k}\sum_{j=1}^{k}\mathcal{E}_d\!\left(\pi_0\big(q\,;\,o_{1:m}\big)^{(j)},\,a^\star\right).
-\label{eq:prefix}
+    \bar{p}_{\text{pre}}(q) \;=\; \frac{1}{k}\sum_{j=1}^{k} \mathcal{E}_d\!\left(\pi_0\!\left(q;\,o_{1:m}\right)^{(j)},\; a^*\right).
 \end{equation}
-We keep the trajectory iff the gain over the cached baseline, $g(q)=\bar{p}_{\mathrm{pre}}(q)-\bar{p}_0(q)$, clears a threshold ($\delta{=}0.1$). Because only the observations are injected, a positive gain certifies the recorded evidence is itself usable---it raised a base model's accuracy on a query it could not reliably solve before---whereas incidental tools give $g\!\approx\!0$ and are discarded (inset, Figure~\ref{fig:pipeline}).
+The causal effect of the observations is then $g(q) = \bar{p}_{\text{pre}}(q) - \bar{p}_0(q)$, where $\bar{p}_0(q)$ is the baseline from Stage~1 (\S\ref{sec:data}). We retain the trajectory iff $g(q) \ge \delta$ (we set $\delta=0.1$). Two design choices deserve emphasis. First, we inject observations \emph{alone}, excluding the teacher's reasoning chain; this eliminates teacher reasoning as a confound and isolates the informational value of the visual evidence itself. Second, we probe with the student-level model $\pi_0$ rather than the teacher $\mathcal{T}$: because $\mathcal{T}$ is powerful enough to answer most queries regardless of observation quality, it is insensitive to evidence gaps, whereas $\pi_0$ faithfully reflects whether the observations resolve the bottleneck that originally caused failure.
 
-\paragraph{The retained corpus.}
-The intersection is the main \dataset; for ablation we also release \emph{correctness-only} and \emph{tool-use-gain-only} variants, the filters being complementary---correctness removes invalid demonstrations, while the tool-use gain filter removes causally useless ones (\S\ref{sec:ablation_gain}). Retained sessions become SFT samples that preserve the teacher's reasoning, each tool call with its arguments, and the returned observation, so fine-tuning supervises \emph{when} and \emph{how} to call tools, not just the answer; tool schemas are extracted from the implementations to match the inference-time agent. Merging per-domain selections gives the 42K-trajectory \dataset (per-domain counts in the appendix); we fine-tune students with tools enabled and evaluate the same backbones without tools (\S\ref{sec:experiments}).
+\paragraph{Complementarity of C1 and C2.}
+Neither criterion alone suffices for high-quality supervision. C1 without C2 admits trajectories where the teacher arrives at the correct answer \emph{despite} useless tool calls---training on such data teaches the student to invoke tools decoratively. C2 without C1 may retain trajectories whose observations help $\pi_0$ yet whose reasoning chain contains errors---training on them propagates flawed reasoning. Their intersection defines our retention set: a trajectory is kept if and only if it both demonstrates correct behavior \emph{and} its observations are the causal reason that correctness becomes achievable. We term this conjunction \emph{dual rejection sampling}. For ablation purposes we also release \textsc{correctness-only} and \textsc{tool-use-gain-only} variants (\S\ref{sec:ablation_gain}). The final corpus, \textsc{OpenVisTool-42K}, merges per-domain retained trajectories formatted as multi-turn SFT sessions that preserve the teacher's reasoning, each tool call with its arguments, and the returned observations; tool schemas are extracted from the inference-time implementations to ensure train--test consistency.
+
+% The difficulty pre-screen acts on queries before synthesis. We now apply \emph{double rejection sampling} to the synthesized trajectories, keeping the \emph{intersection} of two filters.
+
+% \paragraph{Correctness.}
+% A trajectory is retained only if its final answer $\hat{a}$ matches $a^\star$ under $\mathcal{E}_d$, via three backends: rule-based matching (normalized string/number with tolerance for Chart, Table, and Visual Search; point-in-box for GUI), an LLM judge (Qwen3.5-27B) for free-form answers, and a render-based VLM judge for Web-to-HTML (rendered HTML vs.\ reference). Quality rules additionally reject malformed demonstrations---host absolute paths, missing images, or budget exhaustion without an answer.
+
+% \paragraph{Tool-Use Gain.}
+% Correctness alone cannot tell whether the tools \emph{mattered}: a teacher can answer correctly while its observations are decorative. We extract the observations $o_{1:m}$ from a correct trajectory, prepend them---without the teacher's reasoning---to $\pi_0$'s context for the same query, and recompute the pass rate
+% \begin{equation}
+% \bar{p}_{\mathrm{pre}}(q)\;=\;\frac{1}{k}\sum_{j=1}^{k}\mathcal{E}_d\!\left(\pi_0\big(q\,;\,o_{1:m}\big)^{(j)},\,a^\star\right).
+% \label{eq:prefix}
+% \end{equation}
+% We keep the trajectory iff the gain over the cached baseline, $g(q)=\bar{p}_{\mathrm{pre}}(q)-\bar{p}_0(q)$, clears a threshold ($\delta{=}0.1$). Because only the observations are injected, a positive gain certifies the recorded evidence is itself usable---it raised a base model's accuracy on a query it could not reliably solve before---whereas incidental tools give $g\!\approx\!0$ and are discarded (inset, Figure~\ref{fig:pipeline}).
+
+% \paragraph{The retained corpus.}
+% The intersection is the main \dataset; for ablation we also release \emph{correctness-only} and \emph{tool-use-gain-only} variants, the filters being complementary---correctness removes invalid demonstrations, while the tool-use gain filter removes causally useless ones (\S\ref{sec:ablation_gain}). Retained sessions become SFT samples that preserve the teacher's reasoning, each tool call with its arguments, and the returned observation, so fine-tuning supervises \emph{when} and \emph{how} to call tools, not just the answer; tool schemas are extracted from the implementations to match the inference-time agent. Merging per-domain selections gives the 42K-trajectory \dataset (per-domain counts in the appendix); we fine-tune students with tools enabled and evaluate the same backbones without tools (\S\ref{sec:experiments}).

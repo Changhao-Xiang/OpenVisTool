@@ -17,6 +17,13 @@
 
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage[table]{xcolor}
+\usepackage[table]{xcolor}
+\newcommand{\imp}[1]{\textcolor{green!60!black}{\scriptsize{\,(+#1)}}}
+\usepackage{enumitem}
+% \usepackage{tikz}
+% \usepackage{pgfplots}
+% \pgfplotscompat{1.18}  
 \usepackage{xcolor}
 \usepackage{xspace}
 
@@ -37,8 +44,9 @@
 \newcommand{\etal}{\textit{et al.}\xspace}
 \newcommand{\TODO}[1]{\textcolor{red}{[TODO: #1]}}
 
-\title{\method: An Open Recipe for Synthesizing\\
-Cross-Domain Visual Tool-Use Trajectories}
+% \title{\method: An Open Recipe for Synthesizing\\ Cross-Domain Visual Tool-Use Trajectories}
+
+\title{OpenVisTool: An Open Recipe for Synthesizing \\ Instructive Visual Tool-Use Trajectories}
 
 % The [submission] option replaces the author block with
 % "Anonymous submission" automatically; fill in for camera-ready.
@@ -56,6 +64,7 @@ Cross-Domain Visual Tool-Use Trajectories}
 
 \section{Conclusion}
 \label{sec:conclusion}
+\input{sections/conclusion}
 
 \section*{Limitations}
 

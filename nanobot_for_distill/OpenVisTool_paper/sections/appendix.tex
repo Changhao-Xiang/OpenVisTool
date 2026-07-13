@@ -104,4 +104,49 @@ One canonical tool-use trajectory per domain, each rendered as image~$\rightarro
 The teacher's system prompt is assembled dynamically from the enabled toolset: the tool schemas in effect for a run are inserted automatically, and the per-domain instruction is appended on top. Because the same assembly is used at inference, the student sees the same prompt structure it was trained on.
 
 \paragraph{Domain instructions.}
-Each domain instruction lists, per tool, a concrete trigger condition keyed to that domain's bottleneck, and asks the teacher to attach an explicit hypothesis to every call and to call only when it reduces ambiguity. For the two domains with a mandatory multi-step protocol we additionally fix the trajectory shape. GUI Grounding requires: (i) \texttt{crop} a tight window around the candidate element; (ii) decide the click on the cropped image in its local $0$--$1000$ space; (iii) \texttt{locate\_in\_crop} to map that click back to the original image; (iv) emit exactly one \texttt{computer\_use} \texttt{*\_click} at the returned coordinate, which terminates the trajectory. Web-to-HTML requires: (i) optionally inspect the reference with \texttt{crop} or color sampling; (ii) \texttt{write\_file} a first self-contained HTML draft; (iii) \texttt{render\_html} and name the concrete discrepancies against the reference; (iv) \texttt{edit\_file} and re-render, iterating until the rendered page matches---at least one render is mandatory. The complete per-domain instruction templates and the LLM/VLM judge prompts are released with the code. \TODO{Paste the verbatim per-domain instruction templates and judge prompts.}
+Each domain instruction lists, per tool, a concrete trigger condition keyed to that domain's bottleneck, and asks the teacher to attach an explicit hypothesis to every call and to call only when it reduces ambiguity. For the two domains with a mandatory multi-step protocol we additionally fix the trajectory shape. GUI Grounding requires: (i) \texttt{crop} a tight window around the candidate element; (ii) decide the click on the cropped image in its local $0$--$1000$ space; (iii) \texttt{locate\_in\_crop} to map that click back to the original image; (iv) emit exactly one \texttt{computer\_use} \texttt{*\_click} at the returned coordinate, which terminates the trajectory. Web-to-HTML requires: (i) optionally inspect the reference with \texttt{crop} or color sampling; (ii) \texttt{write\_file} a first self-contained HTML draft; (iii) \texttt{render\_html} and name the concrete discrepancies against the reference; (iv) \texttt{edit\_file} and re-render, iterating until the rendered page matches---at least one render is mandatory. The complete per-domain instruction templates and the LLM/VLM judge prompts are released with the code. Table~\ref{tab:patterns} summarizes the visual bottleneck, canonical operation sequence, and termination condition for each domain. \TODO{Paste the verbatim per-domain instruction templates and judge prompts.}
+
+\begin{table*}[t]
+\centering
+\small
+\caption{Per-domain synthesis patterns. Each pattern is derived from the domain's primary visual bottleneck and prescribes the canonical tool operations that resolve it.}
+\label{tab:patterns}
+\begin{tabular}{llll}
+\toprule
+\textbf{Domain} & \textbf{Visual Bottleneck} & \textbf{Canonical Operations} & \textbf{Termination} \\
+\midrule
+\textsc{Chart} & Dense axis labels \& overlapping series & Crop axis $\to$ overlay legend $\to$ compute & Value extracted \\
+\textsc{GUI} & Small widgets in high-res screens & Detect element $\to$ crop-and-zoom $\to$ re-read & Target localized \\
+\textsc{Table} & Fine-print cells across wide tables & Crop region $\to$ color-mask row/col $\to$ read & Cell identified \\
+\textsc{VisualSearch} & Tiny target in cluttered scene & Segment $\to$ crop candidate $\to$ verify & Target confirmed \\
+\textsc{Web2HTML} & Layout structure beyond text content & Render screenshot $\to$ overlay grid $\to$ diff & Markup matches render \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{Full-set Results on Chart and Table Benchmarks}
+\label{app:fullset}
+
+As noted in \S4.5, our training data is filtered from the Chart and Table domains via dual rejection (correctness $\cap$ positive tool-use gain). To verify that the resulting gains are not artifacts of this filtering—i.e., that we sharpen an existing signal rather than manufacture one—we evaluate on the \emph{complete, unfiltered} source benchmarks. As shown in Table~\ref{tab:fullset}, consistent improvements are observed across all three model scales, confirming the generality of our approach.
+
+\begin{table}[t]
+\centering
+\caption{Results on the full (unfiltered) Chart and Table source benchmarks. All models are evaluated without tool invocation at inference time.}
+\label{tab:fullset}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model} & \textbf{CharXiv} & \textbf{ChartMuseum} & \textbf{TableVQA-Bench} & \textbf{MMTBench} \\
+\midrule
+Qwen3.5-9B          & 67.2 & 61.2 & 82.1 & 36.5 \\
+\quad + OpenVisTool-42K & 68.3 & 66.9 & 88.5 & 39.6 \\
+\midrule
+Qwen3.5-4B          & 63.7 & 48.7 & 70.7 & 32.7 \\
+\quad + OpenVisTool-42K & 65.5 & 57.8 & 86.7 & 36.5 \\
+\midrule
+Qwen3-VL-8B-Instruct & 51.2 & 40.4 & 83.3 & 33.3 \\
+\quad + OpenVisTool-42K & 54.0 & 46.7 & 84.9 & 36.1 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
