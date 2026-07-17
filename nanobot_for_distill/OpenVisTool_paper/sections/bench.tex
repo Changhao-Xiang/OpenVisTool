@@ -1,56 +1,36 @@
 \subsection{\benchname: Isolating Tool-Use Ability}
 \label{sec:bench}
 
-We introduce \benchname, a multi-domain evaluation suite specifically designed to measure how effectively models leverage visual tools.
-Unlike existing benchmarks that conflate general visual understanding with tool-augmented reasoning, \benchname{} isolates the incremental value of active tool use by retaining only instances where tools are demonstrably necessary.
-
-
-% \subsubsection{Evaluation Benchmark}
-% KEEP the framing below: the benchmark is, by design, a visual-tool-use
-% diagnostic; the per-domain selection mechanism differs but the principle is one.
+% We introduce \benchname, a multi-domain evaluation suite specifically designed to measure how effectively models leverage visual tools.
+% Unlike existing benchmarks that conflate general visual understanding with tool-augmented reasoning, \benchname{} isolates the incremental value of active tool use by retaining only instances where tools are beneficial.
+General-purpose visual benchmarks often mix tool-relevant instances with questions that can already be solved reliably from the initial image encoding. To isolate the incremental value of active tool use, we introduce \benchname, a multi-domain evaluation suite specifically designed to measure how effectively models leverage visual tools.
 
 \paragraph{Design goal.}
-% \benchname is built so that visual tool use is \emph{decision-relevant}: a model with strong tool-use ability should score clearly higher than one that only reads a static view. We therefore retain, per domain, the instances on which tool use is necessary or beneficial rather than sampling the source benchmarks uniformly.
 
-\benchname targets tasks that \emph{inherently} demand active visual tool use: the information needed to answer correctly is difficult or impossible to obtain from a single static view, requiring models to interact with the visual environment (e.g., cropping into regions of interest, enhancing contrast for faint details, or detecting edges and contours to isolate structure) to gather sufficient evidence. Concretely, we retain, per domain, only the instances for which tool use is necessary or clearly beneficial, rather than uniformly sampling from the source benchmarks.
+\benchname targets tasks that demand active visual evidence acquisition: the information needed to answer correctly is difficult to obtain from a single static view, requiring models to interact with the visual environment (e.g., cropping into regions of interest, enhancing contrast for faint details, or detecting edges and contours to isolate structure) to gather sufficient evidence. Concretely, we retain only the instances for which tool use is clearly beneficial, rather than uniformly sampling from the source benchmarks.
 
-\text
 
-\paragraph{Per-domain construction (one principle, two mechanisms).}
-% All five domains concentrate on tool-decisive instances; only how we obtain them differs with what each source affords.
+\paragraph{Per-domain construction.}
 
-All five domains share the same selection goal: retaining only instances where visual tool use is \emph{critical} to success.
-The two mechanisms below differ in \emph{how} this goal is operationalized, depending on whether the source benchmark already isolates tool-demanding tasks or requires explicit filtering.
+The two mechanisms below differ in \emph{how} our goal is operationalized, depending on whether the source benchmark already isolates tool-demanding tasks or requires explicit filtering.
 
 \begin{itemize}
-% \item \textbf{Chart and Table} --- source QA pools (CharXiv-reasoning $+$ ChartMuseum; MMT-Bench $+$ TableVQA-Bench) are dominated by tool-irrelevant questions, so we \emph{explicitly select}: keep an instance when giving tools raises avg@$5$ above the no-tool avg@$5$ \emph{yet stays below $1$} (a measurable gain, with headroom left). Selection uses the \emph{union} of three third-party strong models (GPT-5.4, Gemini-3.0-Flash, Qwen3.5-Plus); the criterion is ``tools \emph{in principle} help'' (model-agnostic), not ``\emph{our} toolset helps,'' which avoids circularity with the evaluated students.
 
-\item \textbf{Chart and Table} --- source QA pools (CharXiv-reasoning + ChartMuseum; MMT-Bench + TableVQA-Bench) are dominated by tool-irrelevant questions, so we \emph{explicitly filter} for tool-decisive instances.
+\item \textbf{Chart and Table} --- source QA pools are dominated by tool-irrelevant questions, so we \emph{explicitly filter} for tool-decisive instances.
 Concretely, we run three strong closed-source models (GPT-5.4, Gemini-3.0-Flash, Qwen3.5-Plus) on every instance under two conditions (with and without tools), each sampled five times.
 An instance is retained if, for \emph{any} of the three models, the accuracy gain (avg@5\textsubscript{tool} $-$ avg@5\textsubscript{no-tool}) exceeds a threshold of 0.3, indicating that tool use provides a clear and consistent advantage.
 Taking the \emph{union} across models ensures the criterion captures ``tools \emph{in principle} help'' (model-agnostic) rather than ``\emph{our} toolset helps a specific model,'' avoiding circularity with the evaluated students.
 We further report results on the complete (unfiltered) Chart and Table source benchmarks in Appendix~\ref{app:fullset}; the consistent gains confirm that our filtering sharpens an existing signal rather than manufactures one.
 
 
-
-% \item \textbf{GUI, Visual Search, Web-to-HTML} --- the source benchmark is \emph{already} curated for the corresponding visual operation, so we adopt it directly: the smallest-target subset of ScreenSpot-Pro (117 items), VisualProbe-Hard, and Vision2Web-Level1. An additional avg@$5$ filter here would shrink the set below a usable size, so none is applied.
-
 \item \textbf{GUI, Visual Search, Web-to-HTML} --- unlike the chart/table sources, these benchmarks are \emph{already} curated around a specific visual operation (precise click localization, fine-grained visual retrieval, and faithful layout reproduction, respectively). The tasks inherently require active manipulation of the visual input, making an additional tool-gain filter unnecessary. We therefore adopt them directly: the smallest-target subset of ScreenSpot-Pro (117 items), VisualProbe-Hard, and Vision2Web-Level1.
 
 \end{itemize}
 
-% \paragraph{Scoring.}
-% Per-domain evaluators match the source task: extractor $+$ voting LLM judge giving $0/1$ for Chart, Table, and Visual Search; geometric point-in-bbox for GUI; and component-level visual fidelity ($0$--$100$, rendered HTML vs.\ reference) for Web-to-HTML. We report per-domain scores and their average, at avg@$k$.
 
 \paragraph{Evaluation protocol.}
 Each domain uses an evaluator matched to its task type.
 \textbf{Chart, Table, and Visual Search}: an extraction pipeline followed by majority-vote LLM judging yields a binary ($0/1$) correctness score.
 \textbf{GUI}: a prediction is correct if the predicted click coordinate falls within the ground-truth bounding box.
 \textbf{Web-to-HTML}: we render the generated HTML and compute component-level visual fidelity against the reference page (scaled $0$--$100$).
-We report per-domain scores and their macro-average under the avg@$k$ protocol (averaging over $k$ sampled responses per instance).
-
-% \paragraph{Full-set Control (Chart/Table).}
-% Neutralizes the "you rigged the benchmark for tools" critique.
-% Because only Chart and Table are selected by us, we additionally report these two on the \emph{unfiltered} original sets to show the selection \emph{concentrates} rather than \emph{manufactures} the gain (smaller but positive). The non-self-selected OOD benchmarks (\S\ref{sec:ood}) provide the broader control. 
-% To verify that our filtering concentrates rather than manufactures the tool-use gain, we additionally report results on the unfiltered full sets of Chart and Table in Appendix~\ref{app:fullset}. The gain remains positive but smaller, confirming that the selection sharpens an existing signal.
-% \TODO{Add full-set Chart/Table numbers (at least Qwen3.5-9B); appendix table.}
+We report per-domain scores and their macro-average under the avg@$k$ protocol.
