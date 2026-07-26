@@ -1,35 +1,26 @@
 \begin{table*}[t]
 \centering
 
-% Keep the 9pt font and compact spacing local to the tabular.
+% Keep the compact column spacing local to the tabular.
 \begingroup
-\small
-\setlength{\tabcolsep}{2.1pt}
+\setlength{\tabcolsep}{3pt}
 
-% \begin{tabular}{@{}ll*{8}{c}@{}}
-% \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}ll*{8}{c}@{}}
-\begin{tabularx}{\textwidth}{@{}ll*{8}{Y}@{}}
+\begin{tabularx}{\textwidth}{@{}ll*{6}{Y}@{}}
 
 \toprule
-& &
-\multicolumn{6}{c}{\textbf{In-Domain}} &
-\multicolumn{2}{c}{\textbf{Out-of-Distribution}} \\
+\multirow{2}{*}{\textbf{Model}}
+& \multirow{2}{*}{\textbf{Setting}}
+& \multicolumn{6}{c}{\textbf{OpenVisTool-Bench}}
+\\
 \cmidrule(lr){3-8}
-\cmidrule(lr){9-10}
 
-\textbf{Model}
-& \textbf{Setting}
-& \textbf{Chart}
+& & \textbf{Chart}
 & \textbf{GUI}
 & \textbf{Table}
-& \shortstack{\textbf{Visual}\\\textbf{Search}}
-& \shortstack{\textbf{Web2}\\\textbf{HTML}}
-& \textbf{AVG}
-& \shortstack{\textbf{Agentic-}\\\textbf{MME}}
-& \shortstack{\textbf{VTC-}\\\textbf{Bench}} \\
+& \textbf{VisualSearch}
+& \textbf{Web2HTML}
+& \textbf{AVG} \\
 \midrule
-
-\multicolumn{10}{@{}l}{\emph{Closed-source models}} \\
 
 \multirow{2}{*}{GPT-5.5}
 & w/o tool
@@ -38,9 +29,7 @@
 & 48.9
 & 27.7
 & 51.7
-& \cellcolor{blue!10}41.9
-& 36.8
-& 43.6 \\
+& 41.9 \\
 
 & with tool
 & \textbf{66.6}
@@ -48,12 +37,9 @@
 & \textbf{53.9}
 & 46.2
 & \textbf{54.3}
-& \cellcolor{blue!10}\underline{49.0}
-& 37.1
-& \textbf{46.6} \\
+& \underline{49.0} \\
 
-\midrule
-\multicolumn{10}{@{}l}{\emph{Open-source general-purpose models}} \\
+\addlinespace[1pt]
 
 \multirow{2}{*}{Kimi K2.6}
 & w/o tool
@@ -62,9 +48,7 @@
 & 34.4
 & 13.8
 & 49.4
-& \cellcolor{blue!10}37.6
-& 35.5
-& 35.0 \\
+& 37.6 \\
 
 & with tool
 & \underline{64.3}
@@ -72,12 +56,19 @@
 & \underline{51.6}
 & 49.8
 & \underline{53.6}
-& \cellcolor{blue!10}45.9
-& 39.3
-& 38.0 \\
+& 45.9 \\
 
 \midrule
-\multicolumn{10}{@{}l}{\emph{Released specialized tool-use models}} \\
+\shortstack[l]{Qwen2.5-VL-7B-\\Instruct}
+& w/o tool
+& 18.2
+& 5.1
+& 21.2
+& 28.3
+& 23.1
+& 19.2 \\
+
+\addlinespace[1pt]
 
 Thyme
 & with tool
@@ -86,9 +77,9 @@ Thyme
 & 17.9
 & 39.2
 & 14.3
-& \cellcolor{blue!10}18.2
-& 23.2
-& 27.8 \\
+& 18.2 \\
+
+\addlinespace[1pt]
 
 DeepEyes V2
 & with tool
@@ -97,22 +88,17 @@ DeepEyes V2
 & 20.4
 & 31.8
 & 2.4
-& \cellcolor{blue!10}15.5
-& 25.4
-& 21.0 \\
+& 15.5 \\
 
 \midrule
-\multicolumn{10}{@{}l}{\emph{Qwen3.5-4B}} \\
-
+\multirow{2}{*}{Qwen3.5-4B}
 & w/o tool
 & 31.6
 & 22.0
 & 25.4
 & 34.0
 & 40.8
-& \cellcolor{blue!10}30.8
-& 29.9
-& 27.5 \\
+& 30.8 \\
 
 & with tool
 & 32.5
@@ -120,34 +106,26 @@ DeepEyes V2
 & 32.3
 & 39.6
 & 41.6
-& \cellcolor{blue!10}33.9
-& 31.0
-& 32.9 \\
+& 33.9 \\
 
-\rowcolor{gray!15}
-\quad + \dataset
+\quad+\dataset
 & with tool
 & 43.0\imp{11.4}
 & 27.4\imp{5.4}
 & 37.3\imp{11.9}
 & 56.6\imp{22.6}
 & 43.4\imp{2.6}
-& \cellcolor{blue!10}41.5\imp{10.7}
-& 34.5\imp{4.6}
-& 38.8\imp{11.3} \\
+& 41.5\imp{10.7} \\
 
 \midrule
-\multicolumn{10}{@{}l}{\emph{Qwen3-VL-8B-Instruct}} \\
-
+\multirow{2}{*}{Qwen3-VL-8B-Instruct}
 & w/o tool
 & 22.1
 & 13.0
 & 26.7
 & 31.8
 & 26.5
-& \cellcolor{blue!10}24.0
-& 25.6
-& 28.2 \\
+& 24.0 \\
 
 & with tool
 & 20.9
@@ -155,34 +133,26 @@ DeepEyes V2
 & 24.6
 & 30.2
 & 28.1
-& \cellcolor{blue!10}23.3
-& 28.2
-& 25.2 \\
+& 23.3 \\
 
-\rowcolor{gray!15}
-\quad + \dataset
+\quad+\dataset
 & with tool
 & 26.1\imp{4.0}
 & 19.7\imp{6.7}
 & 35.3\imp{8.6}
 & 50.7\imp{18.9}
 & 32.9\imp{6.4}
-& \cellcolor{blue!10}32.9\imp{8.9}
-& 32.3\imp{6.7}
-& 29.1\imp{0.9} \\
+& 32.9\imp{8.9} \\
 
 \midrule
-\multicolumn{10}{@{}l}{\emph{Qwen3.5-9B}} \\
-
+\multirow{2}{*}{Qwen3.5-9B}
 & w/o tool
 & 34.6
 & 27.1
 & 29.0
 & 35.6
 & 40.1
-& \cellcolor{blue!10}33.3
-& 32.7
-& 30.1 \\
+& 33.3 \\
 
 & with tool
 & 28.4
@@ -190,34 +160,26 @@ DeepEyes V2
 & 26.8
 & 38.7
 & 42.0
-& \cellcolor{blue!10}32.1
-& 33.7
-& 23.8 \\
+& 32.1 \\
 
-\rowcolor{gray!15}
-\quad + \dataset
+\quad+\dataset
 & with tool
 & 49.3\imp{14.7}
 & \textbf{31.6}\imp{4.5}
 & 43.1\imp{14.1}
 & \textbf{59.4}\imp{23.8}
 & 45.5\imp{5.4}
-& \cellcolor{blue!10}45.8\imp{12.5}
-& \textbf{41.6}\imp{8.9}
-& 41.4\imp{11.3} \\
+& 45.8\imp{12.5} \\
 
 \midrule
-\multicolumn{10}{@{}l}{\emph{Qwen3.5-27B}} \\
-
+\multirow{2}{*}{Qwen3.5-27B}
 & w/o tool
 & 45.7
 & 28.9
 & 29.8
 & 43.2
 & 46.6
-& \cellcolor{blue!10}38.8
-& 37.1
-& 34.9 \\
+& 38.8 \\
 
 & with tool
 & 47.7
@@ -225,35 +187,23 @@ DeepEyes V2
 & 43.3
 & 54.7
 & 44.3
-& \cellcolor{blue!10}43.8
-& 39.8
-& 40.7 \\
+& 43.8 \\
 
-\rowcolor{gray!15}
-\quad + \dataset
+\quad+\dataset
 & with tool
 & 60.7\imp{15.0}
 & \textbf{31.6}\imp{2.7}
 & 48.2\imp{18.4}
 & \underline{57.3}\imp{14.1}
 & 48.7\imp{2.1}
-& \cellcolor{blue!10}\textbf{49.3}\imp{10.5}
-& \underline{41.1}\imp{4.0}
-& \underline{45.2}\imp{10.3} \\
+& \textbf{49.3}\imp{10.5} \\
 
 \bottomrule
 \end{tabularx}
 \endgroup
 
 \caption{
-% Main results on OpenVisTool-Bench.
-% Rows marked with +\dataset use our training data, and superscripts
-% report absolute improvements over the corresponding no-tool baseline.
-% Training with \dataset improves the in-domain average by
-% 8.9--12.5 points and generalizes to the out-of-distribution benchmarks.
-% Bold and underlined values indicate the best and second-best results,
-% respectively.
-Main results on OpenVisTool-Bench. +OpenVisTool-42K rows use our training data; superscripts show absolute gains over the no-tool baseline. Our data lifts the in-domain average by 8.9–12.5 points and generalizes to out-of-distribution benchmarks. \textbf{Bold} and \underline{underlined} entries mark the best and second-best results.
+Main results on OpenVisTool-Bench. Qwen2.5-VL-7B-Instruct is the shared backbone of Thyme and DeepEyes V2. +OpenVisTool-42K rows use our training data, and green $+x$ suffixes show absolute gains over the no-tool baseline. Our data improves the five-domain average by 8.9--12.5 points. \textbf{Bold} and \underline{underlined} entries mark the best and second-best results.
 }
 \label{tab:main}
 

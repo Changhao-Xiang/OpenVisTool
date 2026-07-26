@@ -1,36 +1,21 @@
 \subsection{\benchname: Isolating Tool-Use Ability}
 \label{sec:bench}
 
-% We introduce \benchname, a multi-domain evaluation suite specifically designed to measure how effectively models leverage visual tools.
-% Unlike existing benchmarks that conflate general visual understanding with tool-augmented reasoning, \benchname{} isolates the incremental value of active tool use by retaining only instances where tools are beneficial.
-General-purpose visual benchmarks often mix tool-relevant instances with questions that can already be solved reliably from the initial image encoding. To isolate the incremental value of active tool use, we introduce \benchname, a multi-domain evaluation suite specifically designed to measure how effectively models leverage visual tools.
+General-purpose visual benchmarks often mix tool-relevant instances with questions that can already be solved from the initial image encoding. \benchname instead isolates the incremental value of active visual evidence acquisition by focusing on instances where operations such as cropping, enhancement, or structure detection materially improve task performance. Whereas Agentic-MME~\citep{wei2026agentic} evaluates broad multimodal agency and VTC-Bench~\citep{zhu2026vtc} stresses compositional tool execution, \benchname specifically measures the performance gain enabled by visual-tool access.
 
-\paragraph{Design goal.}
-
-\benchname targets tasks that demand active visual evidence acquisition: the information needed to answer correctly is difficult to obtain from a single static view, requiring models to interact with the visual environment (e.g., cropping into regions of interest, enhancing contrast for faint details, or detecting edges and contours to isolate structure) to gather sufficient evidence. Concretely, we retain only the instances for which tool use is clearly beneficial, rather than uniformly sampling from the source benchmarks.
-
-
-\paragraph{Per-domain construction.}
-
-The two mechanisms below differ in \emph{how} our goal is operationalized, depending on whether the source benchmark already isolates tool-demanding tasks or requires explicit filtering.
+\paragraph{Construction.}
+We construct each domain according to whether its source benchmark already targets tool-demanding tasks.
 
 \begin{itemize}
 
-\item \textbf{Chart and Table} --- source QA pools are dominated by tool-irrelevant questions, so we \emph{explicitly filter} for tool-decisive instances.
-Concretely, we run three strong closed-source models (GPT-5.4, Gemini-3.0-Flash, Qwen3.5-Plus) on every instance under two conditions (with and without tools), each sampled five times.
-An instance is retained if, for \emph{any} of the three models, the accuracy gain (avg@5\textsubscript{tool} $-$ avg@5\textsubscript{no-tool}) exceeds a threshold of 0.3, indicating that tool use provides a clear and consistent advantage.
-Taking the \emph{union} across models ensures the criterion captures ``tools \emph{in principle} help'' (model-agnostic) rather than ``\emph{our} toolset helps a specific model,'' avoiding circularity with the evaluated students.
-We further report results on the complete (unfiltered) Chart and Table source benchmarks in Appendix~\ref{app:fullset}; the consistent gains confirm that our filtering sharpens an existing signal rather than manufactures one.
+\item \textbf{Chart and Table.}
+For each instance, three strong models (GPT-5.4, Gemini-3.0-Flash, and Qwen3.5-Plus) are evaluated with and without tools using five trials per condition. We retain the instance if at least one model achieves a tool-use gain of $\mathrm{avg@5}_{\mathrm{tool}}-\mathrm{avg@5}_{\mathrm{no\text{-}tool}}>0.3$.
+Taking the union across models reduces dependence on any single model or tool-use policy. Results on the complete source benchmarks are reported in Appendix~\ref{app:fullset}.
 
-
-\item \textbf{GUI, Visual Search, Web-to-HTML} --- unlike the chart/table sources, these benchmarks are \emph{already} curated around a specific visual operation (precise click localization, fine-grained visual retrieval, and faithful layout reproduction, respectively). The tasks inherently require active manipulation of the visual input, making an additional tool-gain filter unnecessary. We therefore adopt them directly: the smallest-target subset of ScreenSpot-Pro (117 items), VisualProbe-Hard, and Vision2Web-Level1.
+\item \textbf{GUI Grounding, Visual Search, and Web-to-HTML.}
+These sources already require active visual interaction---precise localization, fine-grained retrieval, and iterative rendering---so we apply no additional tool-gain filtering. We use the 117 ScreenSpot-Pro~\citep{li2025screenspotpro} instances with the smallest target regions, together with VisualProbe-Hard~\citep{lai2026minio3} and Vision2Web-Level1~\citep{he2026vision2web}.
 
 \end{itemize}
 
-
 \paragraph{Evaluation protocol.}
-Each domain uses an evaluator matched to its task type.
-\textbf{Chart, Table, and Visual Search}: an extraction pipeline followed by majority-vote LLM judging yields a binary ($0/1$) correctness score.
-\textbf{GUI}: a prediction is correct if the predicted click coordinate falls within the ground-truth bounding box.
-\textbf{Web-to-HTML}: we render the generated HTML and compute component-level visual fidelity against the reference page (scaled $0$--$100$).
-We report per-domain scores and their macro-average under the avg@$k$ protocol.
+Each domain uses a task-specific evaluator. Chart, Table, and Visual Search use an extraction pipeline followed by LLM judging for binary correctness; GUI uses point-in-box accuracy; and and Web-to-HTML follows the official Vision2Web evaluation protocol, measuring component-level visual fidelity between the rendered output and reference page on a $0$--$100$ scale. We report each domain score and their macro-average under the avg@$k$ protocol.
