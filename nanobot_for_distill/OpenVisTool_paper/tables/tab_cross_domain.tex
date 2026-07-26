@@ -1,15 +1,13 @@
 \begin{table*}[t]
 \centering
 \small
-\caption{Cross-domain transfer. Single-domain training often improves other domains (tool-use transfers as a meta-skill), but no single slice replaces the full corpus; GUI-only is the sole variant that outperforms the full mixture on its home domain.}
-\label{tab:cross}
 
 \begin{tabular}{llcccccc}
 \toprule
 \textbf{Variant} & \textbf{Setting} & \textbf{Chart} & \textbf{GUI} & \textbf{Table} & \textbf{VisualSearch} & \textbf{Web2HTML} & \textbf{AVG} \\
 \midrule
 \multirow{2}{*}{Qwen3.5-9B (base)} & w/o tool & 34.6 & 27.1 & 29.0 & 35.6 & 40.1 & 33.3 \\
- & with tool & 28.4 & 24.8 & 26.8 & 38.7 & 42.0 & 32.1 \\
+    & with tool & 28.4 & 24.8 & 26.8 & 38.7 & 42.0 & 32.1 \\
 \midrule
 + \dataset{} (full) & with tool & \textbf{49.3} & 31.6 & \textbf{43.1} & \textbf{59.4} & \textbf{45.5} & \textbf{45.8} \\
 \midrule
@@ -21,4 +19,8 @@
 \quad + Web2HTML & with tool & 41.6 & 18.2 & 38.5 & 42.2 & \underline{44.6} & 37.0 \\
 \bottomrule
 \end{tabular}
+
+\caption{Cross-domain transfer. Single-domain training often improves other domains (tool-use transfers as a meta-skill), but no single slice replaces the full corpus; GUI-only is the sole variant that outperforms the full mixture on its home domain.}
+\label{tab:cross}
+
 \end{table*}

@@ -1,0 +1,62 @@
+{
+  "id": "B3_search_teacup_count",
+  "lane": "02_gui_visual_search",
+  "source_jsonl": "VisualSearch_2k.jsonl",
+  "source_line": 1035,
+  "domain": "Visual Search",
+  "rating": 5,
+  "panel_indices": [
+    0,
+    2,
+    3
+  ],
+  "panel_labels": [
+    "Cluttered scene",
+    "Close crop",
+    "Counted objects"
+  ],
+  "short_title": "Visual search: zoom and mark four tea cups",
+  "paper_query": "How many white tea cups are on the coffee table?",
+  "paper_steps": [
+    {
+      "call": "crop(scene, coffee_table) × 2",
+      "observation": "The tea tray is isolated at a readable scale."
+    },
+    {
+      "call": "draw_bbox(cups)",
+      "observation": "Four separate cups are marked on the tray."
+    }
+  ],
+  "paper_answer": "4 white tea cups.",
+  "why": "最终证据图用四色 bbox 标出四个杯子，工具结果的用途一眼可见。",
+  "caveat": "完整轨迹有两次 crop，三联画跳过了第一层较宽的 crop；该图仍保留在 media/。",
+  "recommended": false,
+  "tool_sequence": [
+    "crop",
+    "crop",
+    "draw_bbox"
+  ],
+  "source_path": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/dataset/OpenVisTool/VisualSearch_2k.jsonl",
+  "source_line_1_based": 1035,
+  "source_record_sha256": "46171a2eb43d993e996a6d4a6db29d645719f56f1dde45ad1ae0a935fe21ab1c",
+  "question": "How many white tea cups are there on the coffee table?",
+  "source_images": [
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/dataset/images/Vero-600k-visual-search/visual_probe_351.jpg",
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/Vero-600k-visual-search/session_4729/visual_probe_351_crop_7139cbdd.jpg",
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/Vero-600k-visual-search/session_4729/visual_probe_351_crop_6d50e534.jpg",
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/Vero-600k-visual-search/session_4729/visual_probe_351_crop_6d50e534_bbox_727f4dd5.jpg"
+  ],
+  "copied_media": [
+    "media/00_visual_probe_351.jpg",
+    "media/01_visual_probe_351_crop_7139cbdd.jpg",
+    "media/02_visual_probe_351_crop_6d50e534.jpg",
+    "media/03_visual_probe_351_crop_6d50e534_bbox_727f4dd5.jpg"
+  ],
+  "panel_files": [
+    "panel_1_cluttered_scene.jpg",
+    "panel_2_close_crop.jpg",
+    "panel_3_counted_objects.jpg"
+  ],
+  "session_dir": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/Vero-600k-visual-search/session_4729",
+  "source_session": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/Vero-600k-visual-search/session_4729/distill_VisualSearch_4729.jsonl"
+}

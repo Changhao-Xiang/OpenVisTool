@@ -1,0 +1,61 @@
+{
+  "id": "A3_chart_enrollment_subplots",
+  "lane": "01_chart_table",
+  "source_jsonl": "Chart_14k.jsonl",
+  "source_line": 1889,
+  "domain": "Chart",
+  "rating": 4,
+  "panel_indices": [
+    0,
+    1,
+    2
+  ],
+  "panel_labels": [
+    "Multi-chart input",
+    "Monthly subplot",
+    "Yearly subplot"
+  ],
+  "short_title": "Chart dashboard: acquire evidence from two subplots",
+  "paper_query": "How large is the monthly-to-yearly CS increase relative to average History enrollment?",
+  "paper_steps": [
+    {
+      "call": "crop(chart, subplot=monthly)",
+      "observation": "Monthly averages: CS 76.67; History 58.33."
+    },
+    {
+      "call": "crop(chart, subplot=yearly) + exec(calc)",
+      "observation": "Yearly CS average is 79.5; the normalized increase is 0.0486."
+    }
+  ],
+  "paper_answer": "Approximately 0.049 (4.9%).",
+  "why": "能体现工具在多子图中分别获取证据，再进行数值计算的模式。",
+  "caveat": "“average History enrollment”被教师解释为 monthly History，语义有歧义；不建议作为首选。",
+  "recommended": false,
+  "tool_sequence": [
+    "write_file",
+    "crop",
+    "crop",
+    "exec"
+  ],
+  "source_path": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/dataset/OpenVisTool/Chart_14k.jsonl",
+  "source_line_1_based": 1889,
+  "source_record_sha256": "41c3471d7fca9ed115472590c274c5ce72b479312f25ee1846ace32c7c5f7f6a",
+  "question": "What fraction of the average History enrollment level does the average increase in Computer Science enrollment represent when comparing monthly to yearly trends?",
+  "source_images": [
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/dataset/Chart/ChartVerse-SFT-600K/images/0007219.jpg",
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_7219/0007219_crop_1fa63d4c.jpg",
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_7219/0007219_crop_d7ac4ddc.jpg"
+  ],
+  "copied_media": [
+    "media/00_0007219.jpg",
+    "media/01_0007219_crop_1fa63d4c.jpg",
+    "media/02_0007219_crop_d7ac4ddc.jpg"
+  ],
+  "panel_files": [
+    "panel_1_multi_chart_input.jpg",
+    "panel_2_monthly_subplot.jpg",
+    "panel_3_yearly_subplot.jpg"
+  ],
+  "session_dir": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_7219",
+  "source_session": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_7219/distill_ChartVerse-SFT-600K_7219.jsonl"
+}

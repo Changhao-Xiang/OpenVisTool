@@ -1,0 +1,59 @@
+{
+  "id": "D4_chart_retail_sunburst",
+  "lane": "04_chart_in_range_color",
+  "source_jsonl": "Chart_14k.jsonl",
+  "source_line": 12016,
+  "domain": "Chart",
+  "rating": 5,
+  "panel_indices": [
+    0,
+    1,
+    2
+  ],
+  "panel_labels": [
+    "Sunburst input",
+    "Retail hierarchy isolated",
+    "Retail crop"
+  ],
+  "short_title": "Sunburst: isolate the dominant hierarchy by color",
+  "paper_query": "Within the most prevalent main category, what share does one specific business type typically occupy?",
+  "paper_steps": [
+    {
+      "call": "InRangeColorTool(sunburst, blue HSV)",
+      "observation": "The complete blue Retail hierarchy is separated from the other main categories."
+    },
+    {
+      "call": "crop(chart, Retail sector)",
+      "observation": "Six leaf shares are readable: 9%, 6%, 7%, 5%, 6%, and 4%."
+    }
+  ],
+  "paper_answer": "37% / 6 ≈ 6.17% (about 6%).",
+  "why": "非柱状图案例且调用链只有两步，能展示颜色工具也可用于层级图中的语义区域隔离。",
+  "caveat": "问题表述略抽象；最终数值还需要在 crop 中读取叶节点标签。",
+  "recommended": false,
+  "tool_sequence": [
+    "in_range_color",
+    "crop"
+  ],
+  "source_path": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/dataset/OpenVisTool/Chart_14k.jsonl",
+  "source_line_1_based": 12016,
+  "source_record_sha256": "49fa5b22e0762886617313a883598319e58edd5a28d8a42648c24502bb5a8fa2",
+  "question": "What is the typical share of the total business landscape occupied by a single specific business type within the most prevalent main business category?",
+  "source_images": [
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/dataset/Chart/ChartVerse-SFT-600K/images/0052651.jpg",
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_52651/0052651_in_range_color_968afd06.jpg",
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_52651/0052651_crop_1d0bb307.jpg"
+  ],
+  "copied_media": [
+    "media/00_0052651.jpg",
+    "media/01_0052651_in_range_color_968afd06.jpg",
+    "media/02_0052651_crop_1d0bb307.jpg"
+  ],
+  "panel_files": [
+    "panel_1_sunburst_input.jpg",
+    "panel_2_retail_hierarchy_isolated.jpg",
+    "panel_3_retail_crop.jpg"
+  ],
+  "session_dir": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_52651",
+  "source_session": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_52651/distill_ChartVerse-SFT-600K_52651.jsonl"
+}

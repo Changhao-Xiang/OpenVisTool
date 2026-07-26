@@ -1,23 +1,45 @@
-\begin{table*}[t]
-\centering
-\caption{Double rejection sampling ablation on Qwen3.5-9B at a fixed training budget (1{,}971 steps). The intersection of correctness and positive tool-use gain (\dataset) dominates either filter alone, and all tool-use variants outperform the no-tool-trajectory SFT baseline.}
-\small
-\label{tab:ablation}
+% \begin{table*}[t]
+% \centering
 
-\begin{tabular}{llcccccc}
-\toprule
-\textbf{Variant} & \textbf{Setting} & \textbf{Chart} & \textbf{GUI} & \textbf{Table} & \textbf{VisualSearch} & \textbf{Web2HTML} & \textbf{AVG} \\
-\midrule
-\multirow{2}{*}{Qwen3.5-9B (base)} & w/o tool & 34.6 & 27.1 & 29.0 & 35.6 & 40.1 & 33.3 \\
- & with tool & 28.4 & 24.8 & 26.8 & 38.7 & 42.0 & 32.1 \\
-\midrule
-+ \dataset{} (correctness $\cap$ gain) & with tool & \textbf{49.3} & \textbf{31.6} & \textbf{43.1} & \textbf{59.4} & \textbf{45.5} & \textbf{45.8} \\
-+ correctness-only & with tool & 48.6 & 30.8 & 38.9 & 57.3 & 45.0 & 44.1 \\
-+ tool-use-gain-only & with tool & 46.8 & 27.8 & 37.5 & 54.7 & 44.9 & 42.4 \\
-\midrule
-+ no-tool-trajectory SFT & w/o tool & 42.1 & 40.0 & 30.0 & 30.0 & 43.8 & 37.1 \\
-+ no-tool-trajectory SFT (GUI) & w/o tool & 32.3 & 37.6 & 31.8 & 37.7 & 41.5 & 36.2 \\
-\bottomrule
-\end{tabular}
+% \small
+% \begin{tabular}{llcccccc}
+% \toprule
+% \textbf{Variant} & \textbf{Setting} & \textbf{Chart} & \textbf{GUI} & \textbf{Table} & \textbf{VisualSearch} & \textbf{Web2HTML} & \textbf{AVG} \\
+% \midrule
+% \multirow{2}{*}{Qwen3.5-9B (base)} & w/o tool & 34.6 & 27.1 & 29.0 & 35.6 & 40.1 & 33.3 \\
+%  & with tool & 28.4 & 24.8 & 26.8 & 38.7 & 42.0 & 32.1 \\
+% \midrule
+% + \dataset{} (correctness $\cap$ gain) & with tool & \textbf{49.3} & \textbf{31.6} & \textbf{43.1} & \textbf{59.4} & \textbf{45.5} & \textbf{45.8} \\
+% + correctness-only & with tool & 48.6 & 30.8 & 38.9 & 57.3 & 45.0 & 44.1 \\
+% + tool-use-gain-only & with tool & 46.8 & 27.8 & 37.5 & 54.7 & 44.9 & 42.4 \\
+% \midrule
+% + no-tool-trajectory SFT & w/o tool & 42.1 & 40.0 & 30.0 & 30.0 & 43.8 & 37.1 \\
+% % + no-tool-trajectory SFT (GUI) & w/o tool & 32.3 & 37.6 & 31.8 & 37.7 & 41.5 & 36.2 \\
+% \bottomrule
+% \end{tabular}
 
-\end{table*}
+% \caption{Double rejection sampling ablation on Qwen3.5-9B at a fixed training budget (1{,}971 steps). The intersection of correctness and positive tool-use gain (\dataset) dominates either filter alone, and all tool-use variants outperform the no-tool-trajectory SFT baseline.}
+% \label{tab:ablation}
+
+% \end{table*}
+
+\begin{table}[t]
+    \centering
+    \small
+    \begin{tabular}{llc}
+    \toprule
+    \textbf{Variant} & \textbf{Setting} & \textbf{\benchname} \\
+    \midrule
+    \multirow{2}{*}{Qwen3.5-9B (base)} & w/o tool & 33.3 \\
+     & with tool & 32.1 \\
+    \midrule
+    + \dataset{} & with tool & \textbf{45.8} \\
+    + Outcome Validity & with tool & 44.1 \\
+    + Causal Utility & with tool & 42.4 \\
+    \midrule
+    + no-tool-trajectory SFT & w/o tool & 37.1 \\
+    \bottomrule
+    \end{tabular}
+    \caption{Double rejection sampling ablation on Qwen3.5-9B at a fixed training budget (1{,}971 steps). The intersection of correctness and positive tool-use gain (\dataset) dominates either filter alone, and all tool-use variants outperform the no-tool-trajectory SFT baseline.}
+    \label{tab:ablation}
+\end{table}

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "crop",
+    "arguments": {
+      "image_path": "/mnt/data/HTMLTablePipeline_freq_2-9.png",
+      "crop": [
+        70,
+        250,
+        930,
+        350
+      ]
+    }
+  },
+  {
+    "name": "crop",
+    "arguments": {
+      "image_path": "/mnt/data/HTMLTablePipeline_freq_2-9.png",
+      "crop": [
+        70,
+        600,
+        930,
+        700
+      ]
+    }
+  }
+]

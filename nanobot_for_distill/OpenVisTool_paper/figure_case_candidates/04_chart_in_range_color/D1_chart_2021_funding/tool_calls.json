@@ -1,0 +1,37 @@
+[
+  {
+    "name": "read_file",
+    "arguments": {
+      "path": "/mnt/data/0050695.jpg"
+    }
+  },
+  {
+    "name": "in_range_color",
+    "arguments": {
+      "colorspace": "hsv",
+      "image_path": "/mnt/data/0050695.jpg",
+      "lower": [
+        25,
+        150,
+        200
+      ],
+      "upper": [
+        40,
+        255,
+        255
+      ]
+    }
+  },
+  {
+    "name": "exec",
+    "arguments": {
+      "command": "python3 << 'EOF'\n# Bbox y-coordinates (top of each yellow bar)\n# All bars end at y=867 (bottom)\ny_tops = [127, 597, 507, 588, 688, 751, 769, 787, 796, 804]\ny_bottom = 867\n\n# Calculate heights in pixels\nheights = [y_bottom - y for y in y_tops]\nprint(\"Heights (pixels):\", heights)\n\n# Determine scale factor\n# Assuming US bar (first bar) is at 820 million\nus_height = heights[0]\nus_value = 820.0\nscale = us_height / us_value  # pixels per million\nprint(f\"Scale: {scale} pixels per million\")\n\n# Calculate values for all bars\nvalues = [h / scale for h in heights]\nprint(\"Values (millions):\", values)\n\n# Total 2021 funding\ntotal = sum(values)\nprint(f\"Total 2021 funding: {total} million\")\n\n# US - China\nus = values[0]\nchina = values[3]  # 4th bar (index 3)\ndifference = us - china\nprint(f\"US - China: {us} - {china} = {difference} million\")\n\n# Fraction\nfraction = difference / total\nprint(f\"Fraction: {difference} / {total} = {fraction}\")\nprint(f\"Fraction (rounded): {round(fraction, 4)}\")\nEOF"
+    }
+  },
+  {
+    "name": "exec",
+    "arguments": {
+      "command": "python3 << 'EOF'\n# Using round number estimates based on visual inspection and bbox analysis\n# 2021 funding values (yellow bars) in millions USD\nvalues_2021 = {\n    'United States': 820,\n    'United Kingdom': 300,\n    'Russia': 400,\n    'China': 310,\n    'Germany': 200,\n    'France': 130,\n    'Israel': 110,\n    'India': 90,\n    'Japan': 80,\n    'Australia': 70\n}\n\n# Total 2021 funding\ntotal_2021 = sum(values_2021.values())\nprint(f\"Total 2021 funding: {total_2021} million USD\")\n\n# US contribution\nus_2021 = values_2021['United States']\nprint(f\"US 2021: {us_2021} million USD\")\n\n# China contribution\nchina_2021 = values_2021['China']\nprint(f\"China 2021: {china_2021} million USD\")\n\n# Difference\ndifference = us_2021 - china_2021\nprint(f\"US - China: {difference} million USD\")\n\n# Fraction\nfraction = difference / total_2021\nprint(f\"Fraction: {difference} / {total_2021} = {fraction}\")\nprint(f\"Fraction (rounded to 4 decimals): {round(fraction, 4)}\")\nprint(f\"Fraction as percentage: {fraction * 100:.2f}%\")\n\n# Simplified fraction\nimport math\ngcd = math.gcd(difference, total_2021)\nprint(f\"Simplified fraction: {difference//gcd}/{total_2021//gcd}\")\nEOF"
+    }
+  }
+]

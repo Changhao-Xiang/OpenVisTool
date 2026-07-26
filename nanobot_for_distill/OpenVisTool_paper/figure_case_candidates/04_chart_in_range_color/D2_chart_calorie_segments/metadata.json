@@ -1,0 +1,64 @@
+{
+  "id": "D2_chart_calorie_segments",
+  "lane": "04_chart_in_range_color",
+  "source_jsonl": "Chart_14k.jsonl",
+  "source_line": 10682,
+  "domain": "Chart",
+  "rating": 5,
+  "panel_indices": [
+    0,
+    1,
+    3
+  ],
+  "panel_labels": [
+    "Stacked-bar input",
+    "Low-calorie segments",
+    "High-calorie segments"
+  ],
+  "short_title": "Stacked bars: split caloric levels by color",
+  "paper_query": "What is the average ratio of high-calorie consumption to combined low- and moderate-calorie consumption?",
+  "paper_steps": [
+    {
+      "call": "InRangeColorTool(chart, pink HSV)",
+      "observation": "The low-calorie segment of every food-category bar is isolated."
+    },
+    {
+      "call": "InRangeColorTool(chart, green HSV)",
+      "observation": "The high-calorie segments are isolated; a third real call extracts the moderate segments."
+    }
+  ],
+  "paper_answer": "Average High / (Low + Moderate) ≈ 1.062.",
+  "why": "最典型的堆叠柱颜色分解：三次真实 HSV 调用分别取得 Low、Moderate、High，颜色掩膜与数值计算关系直观。",
+  "caveat": "三联主卡只放 Low 与 High；Moderate 的真实输出保留在 media/ 和完整记录中。",
+  "recommended": true,
+  "tool_sequence": [
+    "in_range_color",
+    "in_range_color",
+    "in_range_color",
+    "write_file",
+    "exec"
+  ],
+  "source_path": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/dataset/OpenVisTool/Chart_14k.jsonl",
+  "source_line_1_based": 10682,
+  "source_record_sha256": "bbc22285265faeda9b58d835b84edf47ce8516db5140cb19e7feea868351b04d",
+  "question": "What is the average ratio of high-calorie consumption to combined low and moderate-calorie consumption across all food categories?",
+  "source_images": [
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/dataset/Chart/ChartVerse-SFT-600K/images/0051236.jpg",
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_51236/0051236_in_range_color_43c17dbf.jpg",
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_51236/0051236_in_range_color_eb50514f.jpg",
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_51236/0051236_in_range_color_e633e092.jpg"
+  ],
+  "copied_media": [
+    "media/00_0051236.jpg",
+    "media/01_0051236_in_range_color_43c17dbf.jpg",
+    "media/02_0051236_in_range_color_eb50514f.jpg",
+    "media/03_0051236_in_range_color_e633e092.jpg"
+  ],
+  "panel_files": [
+    "panel_1_stacked_bar_input.jpg",
+    "panel_2_low_calorie_segments.jpg",
+    "panel_3_high_calorie_segments.jpg"
+  ],
+  "session_dir": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_51236",
+  "source_session": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_51236/distill_ChartVerse-SFT-600K_51236.jsonl"
+}

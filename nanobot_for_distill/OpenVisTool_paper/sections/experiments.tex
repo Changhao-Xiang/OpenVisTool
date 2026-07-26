@@ -7,7 +7,6 @@ We design experiments to validate our central claim—that effective visual tool
     
     \item \textbf{Generalization:} Does the learned tool-use capability transfer to out-of-distribution visual tasks unseen during training, rather than overfitting to domain-specific tool-calling patterns? (\S\ref{sec:ood})
     
-    % \item \textbf{Observation utility:} Does our filtering strategy (correctness $\cap$ positive tool-use gain) produce stronger training signal than naive SFT on the same queries?(\S\ref{sec:ablation_gain})
     \item \textbf{Supervision verification:} Are outcome validity and causal utility both necessary for constructing effective visual tool-use supervision? (\S\ref{sec:ablation_gain})
     
     \item \textbf{Cross-domain synergy:} Does visual tool use emerge as a transferable meta-skill across domains, and does multi-domain training resolve strategy conflicts that single-domain training introduces? (\S\ref{sec:cross_domain})
@@ -19,10 +18,10 @@ We design experiments to validate our central claim—that effective visual tool
 \label{sec:setup}
 
 \paragraph{Benchmarks.}
-We primarily evaluate on \benchname, which covers diverse visual tool-use scenarios across multiple domains. To assess out-of-distribution generalization, we additionally test on Agentic-MME \citep{agentic-mme} and VTC-Bench \citep{vtcbench} . We also report results on the full Chart and Table source benchmarks to confirm that gains are not artifacts of our data filtering (Appendix~\ref{app:fullset}).
+We primarily evaluate on \benchname, which covers diverse visual tool-use scenarios across multiple domains. To assess out-of-distribution generalization, we additionally test on Agentic-MME~\citep{wei2026agentic} and VTC-Bench~\citep{zhu2026vtc} . We also report results on the full Chart and Table source benchmarks to confirm that gains are not artifacts of our data filtering (Appendix~\ref{app:fullset}).
 
 \paragraph{Base Models and Training.}
-We fine-tune four base models spanning two model families and 4B--27B scale --- Qwen3.5-4B/9B/27B and Qwen3-VL-8B-Instruct --- on \dataset for three epochs with ms-swift \citep{swift}, tools enabled at inference. Optimization details are in the appendix.
+We fine-tune four base models spanning two model families and 4B--27B scale --- Qwen3.5-4B/9B/27B and Qwen3-VL-8B-Instruct --- on \dataset for three epochs with SWIFT~\citep{zhao2025swift}, tools enabled at inference. Optimization details are in the appendix.
 
 \paragraph{Inference Protocol.}
 ``With tool'' runs the fine-tuned model as a tool-using agent over the shared visual toolset (up to a fixed tool-round budget); ``w/o tool'' runs the same backbone single-pass without tools.
@@ -39,15 +38,18 @@ and (iii)~data-variant ablations that retain trajectories using outcome validity
 Table~\ref{tab:main} summarizes performance across all models and domains on both in-domain and out-of-distribution benchmarks. We highlight several key findings below.
 
 \paragraph{Consistent gains across all base models and domains.}
-Our method yields substantial improvements over the no-tool baselines across all domains and model scales. Across models ranging from 4B to 27B, fine-tuning with \dataset{} brings an average gain of 10.7 points on the in-domain benchmarks, with the most pronounced improvement observed in VisualSearch (+23.8 points). Notably, even without any fine-tuning, simply equipping closed-source models with our toolset provides significant benefits: GPT-5.5 and Kimi K2.6 achieve 7.1 and 14.1 absolute gains, respectively, demonstrating the inherent utility of the designed tools. However, for smaller open-source models, naively providing tools without dedicated training yields marginal or even negative returns—Qwen3.5-9B, for instance. After fine-tuning on \dataset, these same models learn to leverage tools effectively, comparable to closed-source models. For example, Qwen3.5-9B with our training achieves an average of 45.8, surpassing GPT-5.5's 41.9 without tools and closely approaching its tool-augmented performance of 49.0.
-
+Our method yields substantial improvements over the no-tool baselines across all domains and model scales. Across models ranging from 4B to 27B, fine-tuning with \dataset{} brings an average gain of 10.7 points on \benchname, with the most pronounced improvement observed in VisualSearch (+23.8 points). 
+Notably, even without any fine-tuning, simply equipping strong off-the-shelf models with our toolset provides significant benefits: the closed-source GPT-5.5 and the open-source Kimi K2.6 achieve 7.1 and 14.1 absolute gains, respectively, demonstrating the inherent utility of the designed tools.
+However, for smaller open-source models, naively providing tools without dedicated training yields marginal or even negative returns—Qwen3.5-9B, for instance. After fine-tuning on \dataset, these same models learn to leverage tools effectively, comparable to closed-source models. For example, Qwen3.5-9B with our training achieves an average of 45.8, surpassing GPT-5.5's 41.9 without tools and closely approaching its tool-augmented performance of 49.0.
+In contrast, existing tool-use models Thyme and DeepEyes V2, trained on narrow single-domain data, perform worse on the five-domain average than vanilla base models \emph{without any tool access}—they improve on their specialty but collapse catastrophically elsewhere. This comparison highlights that a diverse, multi-domain training corpus, as provided by \dataset{}, is essential for robust and generalizable visual tool use.
 
 \paragraph{Largest gains emerge where tools unlock new visual evidence.}
-For domains where the answer is largely derivable from surface-level visual content—such as Chart, which primarily tests text and semantic extraction from images—a sufficiently capable model can already perform well without tools (e.g., GPT-5.5 scores 63.3 on Chart without tools). However, for more challenging domains involving dense details and hidden evidence—such as VisualSearch, which demands fine-grained spatial and geometric reasoning—models often struggle to succeed with their inherent visual perception alone. In these scenarios, invoking auxiliary tools to crop, zoom, or reformat visual content becomes essential. This explains why our method yields the most substantial gains precisely in these demanding domains (e.g., Qwen3.5-9B: +23.8 points on VisualSearch), where tools effectively bridge the gap between what the model can perceive and what the task requires. A detailed cross-domain analysis is provided in \S\ref{sec:cross_domain}.
+For domains where the answer is largely derivable from surface-level visual content—such as Chart, which primarily tests text and semantic extraction from images—a sufficiently capable model can already perform well without tools (e.g., GPT-5.5 scores 63.3 on Chart without tools). However, for more challenging domains involving dense details and hidden evidence—such as VisualSearch, which demands fine-grained spatial and geometric reasoning—models often struggle to succeed with their inherent visual perception alone. In these scenarios, invoking auxiliary tools to crop, zoom, or reformat visual content becomes essential. This explains why our method yields the most substantial gains precisely in these demanding domains (e.g., Qwen3.5-9B: +23.8 points on VisualSearch), where tools effectively bridge the gap between what the model can perceive and what the task requires.
+% A detailed cross-domain analysis is provided in \S\ref{sec:cross_domain}.
 
 
-\paragraph{Cross-domain generalization separates \dataset from prior works.}
-Existing released models, Thyme and DeepEyes V2, perform worse on the five-domain average than vanilla base models \emph{without any tool access}. Trained on narrow-domain data, these models collapse catastrophically on out-of-specialty tasks, revealing that domain-specific tool-use training fails to generalize. In contrast, models trained with \dataset{} improve uniformly across all five domains, demonstrating that a diverse, multi-domain training corpus is the key to robust and generalizable visual tool use.
+% \paragraph{Cross-domain generalization separates \dataset from prior works.}
+% Existing released models, Thyme and DeepEyes V2, perform worse on the five-domain average than vanilla base models \emph{without any tool access}. Trained on narrow-domain data, these models collapse catastrophically on out-of-specialty tasks, revealing that domain-specific tool-use training fails to generalize. In contrast, models trained with \dataset{} improve uniformly across all five domains, demonstrating that a diverse, multi-domain training corpus is the key to robust and generalizable visual tool use.
 
 
 \input{tables/tab_main}
@@ -57,13 +59,12 @@ Existing released models, Thyme and DeepEyes V2, perform worse on the five-domai
 \label{sec:ood}
 
 \paragraph{Gains hold on benchmarks we did not select.}
-To verify that the tool-use capability learned from our five training domains (Chart, GUI, Table, VisualSearch, and Web2HTML) is not domain-specific, we evaluate on two held-out benchmarks—Agentic-MME and VTC-Bench—that cover substantially different visual scenarios unseen during training. As shown in Tab.~\ref{tab:main}, models trained on \dataset{} consistently outperform their no-tool counterparts on both out-of-distribution benchmarks (e.g., Qwen3.5-27B: +4.0 points on Agentic-MME and +10.3 points on VTC-Bench). This demonstrates that our models do not merely memorize domain-specific tool-calling patterns, but instead acquire a transferable skill of knowing \emph{when} and \emph{how} to invoke visual tools, which readily extends to novel tasks and visual contexts.
+To verify that the tool-use capability learned from our five training domains (Chart, GUI, Table, VisualSearch, and Web2HTML) is not domain-specific, we evaluate on two held-out benchmarks—Agentic-MME and VTC-Bench—that cover different visual scenarios unseen during training. As shown in Tab.~\ref{tab:main}, models trained on \dataset{} consistently outperform their no-tool counterparts on both out-of-distribution benchmarks (e.g., Qwen3.5-27B: +4.0 points on Agentic-MME and +10.3 points on VTC-Bench). This demonstrates that our models do not merely memorize domain-specific tool-calling patterns, but instead acquire a transferable skill of knowing \emph{when} and \emph{how} to invoke visual tools, which readily extends to novel tasks and visual contexts.
 
 
 % \subsection{Ablation: Double Rejection Sampling}
 \subsection{Ablation Study}
-\label{sec:ablation_gain}
-\label{sec:notool_traj}
+\label{sec:ablation}
 To validate our filtering strategy and confirm that fine-tuning gains stem from learned tool-use capability rather than naive SFT on hard queries, we compare four data variants under controlled conditions. All variants train Qwen3.5-9B on the same query set for a fixed 1{,}971 training steps, differing only in the retention rule: (1)~full \dataset{} (outcome validity $\cap$ causal utility), (2)~outcome-validity-only, (3)~causal-utility-only, and (4)~no-tool-trajectory SFT (trajectories without any tool invocation). Full results are reported in Table~\ref{tab:ablation}.
 
 
@@ -72,7 +73,15 @@ As shown in Figure~\ref{fig:ablation}, every tool-augmented variant substantiall
 
 
 \paragraph{Both filters are complementary and necessary.}
-Intersecting both filters consistently dominates either filter in isolation, with correctness-only and gain-only trailing by 1.7 and 3.4 points, respectively. The two filters address distinct failure modes: correctness filtering removes invalid demonstrations that would teach erroneous behavior, while the tool-use gain filter discards trajectories where tools are invoked but contribute no causal benefit. Their combination yields the highest-quality training signal. Full per-domain breakdowns are provided in Table~\ref{tab:ablation}.
+% Intersecting both filters consistently dominates either filter in isolation, with correctness-only and gain-only trailing by 1.7 and 3.4 points, respectively.
+% The two filters address distinct failure modes: correctness filtering removes invalid demonstrations that would teach erroneous behavior, while the tool-use gain filter discards trajectories where tools are invoked but contribute no causal benefit. Their combination yields the highest-quality training signal. Full per-domain breakdowns are provided in Table~\ref{tab:ablation}.
+Intersecting both filters consistently dominates either filter in isolation, with outcome-validity-only and causal-utility-only trailing by 1.7 and 3.4 points, respectively.
+The two filters address distinct failure modes: outcome validity removes demonstrations that lead to incorrect answers and would teach erroneous behavior, while causal utility discards trajectories where tools are invoked but their observations contribute no measurable benefit to reaching the solution. Their combination yields the highest-quality training signal. Full per-domain breakdowns are provided in Table~\ref{tab:ablation}.
+
+\paragraph{Instructive filtering yields more useful tool interactions.}
+To probe the learned behavior beyond the accuracy of the fine-tuned models themselves, we replay their tool-interaction trajectories to the original Qwen3.5-9B base model. The replayed context contains only tool names, invocation arguments, and returned observations; all hidden reasoning and final answers from the trajectory-generating model are excluded, ruling out direct copying of the generator's answer or imitation of its rationale. As shown in Table~\ref{tab:trajectory_replay}, trajectories from both trained models improve the base model on all three benchmarks, but those from the instructively trained model consistently outperform correctness-only trajectories by 2.4 points on \benchname, 1.2 on Agentic-MME, and 1.6 on VTC-Bench. This behavior-level transfer suggests that causal-utility filtering induces an evidence-acquisition policy whose resulting interactions are more useful to another model, rather than merely producing tool calls that accompany successful outcomes.
+
+\input{tables/tab_trajectory_replay}
 
 
 \begin{figure}[t]
@@ -83,6 +92,7 @@ Intersecting both filters consistently dominates either filter in isolation, wit
     \label{fig:ablation}
 \end{figure}
 
+\input{tables/tab_cross_domain}
 
 \input{tables/tab_ablation}
 
@@ -127,7 +137,4 @@ suffices; non-GUI data dilutes this direct-imitation signal with multi-step
 crop$\to$OCR patterns. We view this as a pointer to domain-adaptive mixture
 weighting rather than a failure of tool-use supervision
 (\dataset{} still improves GUI from 24.8 to 31.6 over the untuned base).
-
-
-\input{tables/tab_cross_domain}
 

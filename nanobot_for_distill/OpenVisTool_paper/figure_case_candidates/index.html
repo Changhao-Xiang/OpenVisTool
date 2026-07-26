@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenVisTool figure case candidates</title>
+  <style>
+    :root { color-scheme: light; font-family: Arial, "Noto Sans CJK SC", sans-serif; }
+    body { margin: 0; background: #edf4ee; color: #1e2b21; }
+    header { padding: 28px 4vw 16px; max-width: 1500px; margin: auto; }
+    h1 { margin: 0 0 8px; color: #1f6534; }
+    main { max-width: 1500px; margin: auto; padding: 12px 4vw 48px; display: grid; gap: 22px; }
+    .card { background: white; border: 1px solid #aac6af; border-radius: 14px; padding: 18px; box-shadow: 0 4px 16px #234b2a15; }
+    .card img { display: block; width: 100%; border: 1px solid #d4e0d6; border-radius: 8px; }
+    .meta { color: #40734b; font-weight: 700; }
+    h2 { margin: 6px 0; }
+    p { line-height: 1.55; }
+    a { color: #17642c; }
+    .links { display: flex; gap: 18px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>OpenVisTool 方法图真实调用案例候选</h1>
+    <p>按 Query → 关键 Tool Call / Observation → Answer 组织；完整记录仅用于来源审计。</p>
+  </header>
+  <main>
+    
+            <article class="card">
+              <div class="meta">Chart / Table — fine-grained reading · ★★★★★</div>
+              <h2>A1_table_survey_row</h2>
+              <p>Survey table: enhance, then isolate one row</p>
+              <a href="01_chart_table/A1_table_survey_row/paper_card.jpg">
+                <img src="01_chart_table/A1_table_survey_row/paper_card.jpg" alt="A1_table_survey_row">
+              </a>
+              <p><strong>Query:</strong> Which organization conducted the survey in 2020?</p>
+              <p><strong>Answer:</strong> Public Policy Polling.</p>
+              <p>调用链最干净：原表 → 对比度增强 → 目标行裁剪；问题和答案都短，适合在小版面讲清证据获取。</p>
+              <p class="links">
+                <a href="01_chart_table/A1_table_survey_row/paper_case.md">concise case</a>
+                <a href="01_chart_table/A1_table_survey_row/record.pretty.json">full record (audit)</a>
+              </p>
+            </article>
+            
+            <article class="card">
+              <div class="meta">Chart / Table — fine-grained reading · ★★★★★</div>
+              <h2>A2_chart_sunburst_regions</h2>
+              <p>Sunburst chart: inspect multiple dense regions</p>
+              <a href="01_chart_table/A2_chart_sunburst_regions/paper_card.jpg">
+                <img src="01_chart_table/A2_chart_sunburst_regions/paper_card.jpg" alt="A2_chart_sunburst_regions">
+              </a>
+              <p><strong>Query:</strong> What is the combined share of the top product in each of the three largest categories?</p>
+              <p><strong>Answer:</strong> 9% + 6% + 4% = 19%.</p>
+              <p>色彩丰富且“整图 → 局部证据”的视觉关系非常直观；三次真实 crop 均保留在 media/。</p>
+              <p class="links">
+                <a href="01_chart_table/A2_chart_sunburst_regions/paper_case.md">concise case</a>
+                <a href="01_chart_table/A2_chart_sunburst_regions/record.pretty.json">full record (audit)</a>
+              </p>
+            </article>
+            
+            <article class="card">
+              <div class="meta">Chart / Table — fine-grained reading · ★★★★</div>
+              <h2>A3_chart_enrollment_subplots</h2>
+              <p>Chart dashboard: acquire evidence from two subplots</p>
+              <a href="01_chart_table/A3_chart_enrollment_subplots/paper_card.jpg">
+                <img src="01_chart_table/A3_chart_enrollment_subplots/paper_card.jpg" alt="A3_chart_enrollment_subplots">
+              </a>
+              <p><strong>Query:</strong> How large is the monthly-to-yearly CS increase relative to average History enrollment?</p>
+              <p><strong>Answer:</strong> Approximately 0.049 (4.9%).</p>
+              <p>能体现工具在多子图中分别获取证据，再进行数值计算的模式。</p>
+              <p class="links">
+                <a href="01_chart_table/A3_chart_enrollment_subplots/paper_case.md">concise case</a>
+                <a href="01_chart_table/A3_chart_enrollment_subplots/record.pretty.json">full record (audit)</a>
+              </p>
+            </article>
+            
+            <article class="card">
+              <div class="meta">Chart / Table — fine-grained reading · ★★★★</div>
+              <h2>A4_table_social_metrics</h2>
+              <p>Social metrics table: compare two distant rows</p>
+              <a href="01_chart_table/A4_table_social_metrics/paper_card.jpg">
+                <img src="01_chart_table/A4_table_social_metrics/paper_card.jpg" alt="A4_table_social_metrics">
+              </a>
+              <p><strong>Query:</strong> Were Twitter retweets more numerous than Facebook posts?</p>
+              <p><strong>Answer:</strong> True — 800 retweets vs. 400 Facebook posts.</p>
+              <p>问题简单，两个 crop 分别提供比较所需的数值，读者无需理解复杂背景。</p>
+              <p class="links">
+                <a href="01_chart_table/A4_table_social_metrics/paper_case.md">concise case</a>
+                <a href="01_chart_table/A4_table_social_metrics/record.pretty.json">full record (audit)</a>
+              </p>
+            </article>
+            
+            <article class="card">
+              <div class="meta">GUI / Visual Search — precise localization · ★★★★★</div>
+              <h2>B1_gui_calendar_button</h2>
+              <p>Calendar GUI: localize and click “Edit Details…”</p>
+              <a href="02_gui_visual_search/B1_gui_calendar_button/paper_card.jpg">
+                <img src="02_gui_visual_search/B1_gui_calendar_button/paper_card.jpg" alt="B1_gui_calendar_button">
+              </a>
+              <p><strong>Query:</strong> Click “Edit Details…” in the calendar event dialog.</p>
+              <p><strong>Answer:</strong> Click issued at [353, 453].</p>
+              <p>标准且完整的 crop → draw_bbox → computer_use 轨迹；目标按钮语义明确，截图干净。</p>
+              <p class="links">
+                <a href="02_gui_visual_search/B1_gui_calendar_button/paper_case.md">concise case</a>
+                <a href="02_gui_visual_search/B1_gui_calendar_button/record.pretty.json">full record (audit)</a>
+              </p>
+            </article>
+            
+            <article class="card">
+              <div class="meta">GUI / Visual Search — precise localization · ★★★★★</div>
+              <h2>B2_search_dog_scarf</h2>
+              <p>Visual search: two-stage zoom to read a scarf</p>
+              <a href="02_gui_visual_search/B2_search_dog_scarf/paper_card.jpg">
+                <img src="02_gui_visual_search/B2_search_dog_scarf/paper_card.jpg" alt="B2_search_dog_scarf">
+              </a>
+              <p><strong>Query:</strong> What text appears on the dog’s scarf?</p>
+              <p><strong>Answer:</strong> “FILTHY.”</p>
+              <p>从大场景到狗再到项圈文字的两级嵌套 crop 非常直观，缩略图下仍能看出证据逐步显现。</p>
+              <p class="links">
+                <a href="02_gui_visual_search/B2_search_dog_scarf/paper_case.md">concise case</a>
+                <a href="02_gui_visual_search/B2_search_dog_scarf/record.pretty.json">full record (audit)</a>
+              </p>
+            </article>
+            
+            <article class="card">
+              <div class="meta">GUI / Visual Search — precise localization · ★★★★★</div>
+              <h2>B3_search_teacup_count</h2>
+              <p>Visual search: zoom and mark four tea cups</p>
+              <a href="02_gui_visual_search/B3_search_teacup_count/paper_card.jpg">
+                <img src="02_gui_visual_search/B3_search_teacup_count/paper_card.jpg" alt="B3_search_teacup_count">
+              </a>
+              <p><strong>Query:</strong> How many white tea cups are on the coffee table?</p>
+              <p><strong>Answer:</strong> 4 white tea cups.</p>
+              <p>最终证据图用四色 bbox 标出四个杯子，工具结果的用途一眼可见。</p>
+              <p class="links">
+                <a href="02_gui_visual_search/B3_search_teacup_count/paper_case.md">concise case</a>
+                <a href="02_gui_visual_search/B3_search_teacup_count/record.pretty.json">full record (audit)</a>
+              </p>
+            </article>
+            
+            <article class="card">
+              <div class="meta">GUI / Visual Search — precise localization · ★★★★</div>
+              <h2>B4_gui_center_alignment</h2>
+              <p>Writer GUI: localize the center-alignment button</p>
+              <a href="02_gui_visual_search/B4_gui_center_alignment/paper_card.jpg">
+                <img src="02_gui_visual_search/B4_gui_center_alignment/paper_card.jpg" alt="B4_gui_center_alignment">
+              </a>
+              <p><strong>Query:</strong> Click the center-alignment button in the formatting toolbar.</p>
+              <p><strong>Answer:</strong> Click issued at [768, 183].</p>
+              <p>真实桌面应用、目标图标清楚，同样覆盖 crop → bbox → click 的典型模式。</p>
+              <p class="links">
+                <a href="02_gui_visual_search/B4_gui_center_alignment/paper_case.md">concise case</a>
+                <a href="02_gui_visual_search/B4_gui_center_alignment/record.pretty.json">full record (audit)</a>
+              </p>
+            </article>
+            
+            <article class="card">
+              <div class="meta">GUI / Visual Search — precise localization · ★★★★★</div>
+              <h2>B5_search_water_bottles</h2>
+              <p>Visual search: localize and count six bottles</p>
+              <a href="02_gui_visual_search/B5_search_water_bottles/paper_card.jpg">
+                <img src="02_gui_visual_search/B5_search_water_bottles/paper_card.jpg" alt="B5_search_water_bottles">
+              </a>
+              <p><strong>Query:</strong> How many mineral-water bottles are on the mini-bar counter?</p>
+              <p><strong>Answer:</strong> 6 mineral-water bottles.</p>
+              <p>crop 后的目标组清楚，最终六个红框很醒目；比纯文字读取更能体现定位工具。</p>
+              <p class="links">
+                <a href="02_gui_visual_search/B5_search_water_bottles/paper_case.md">concise case</a>
+                <a href="02_gui_visual_search/B5_search_water_bottles/record.pretty.json">full record (audit)</a>
+              </p>
+            </article>
+            
+            <article class="card">
+              <div class="meta">Web-to-HTML — render-and-revise · ★★★★★</div>
+              <h2>C1_web_tech_company</h2>
+              <p>Tech-company page: repair a narrow first render</p>
+              <a href="03_web_to_html/C1_web_tech_company/paper_card.jpg">
+                <img src="03_web_to_html/C1_web_tech_company/paper_card.jpg" alt="C1_web_tech_company">
+              </a>
+              <p><strong>Query:</strong> Recreate the reference tech-company webpage in HTML and CSS.</p>
+              <p><strong>Answer:</strong> Final self-contained tech-company HTML/CSS returned.</p>
+              <p>初稿错误非常明显（页面被压成窄列），修订后恢复为接近参考图的横向布局；小尺寸也看得出变化。</p>
+              <p class="links">
+                <a href="03_web_to_html/C1_web_tech_company/paper_case.md">concise case</a>
+                <a href="03_web_to_html/C1_web_tech_company/record.pretty.json">full record (audit)</a>
+              </p>
+            </article>
+            
+            <article class="card">
+              <div class="meta">Web-to-HTML — render-and-revise · ★★★★★</div>
+              <h2>C2_web_car_company</h2>
+              <p>Car-company page: fix layout and oversized media</p>
+              <a href="03_web_to_html/C2_web_car_company/paper_card.jpg">
+                <img src="03_web_to_html/C2_web_car_company/paper_card.jpg" alt="C2_web_car_company">
+              </a>
+              <p><strong>Query:</strong> Recreate the reference car-company webpage in HTML and CSS.</p>
+              <p><strong>Answer:</strong> Final self-contained car-company HTML/CSS returned.</p>
+              <p>红蓝绿和评论卡片让布局对应关系清楚；仅两次 render，调用链短。</p>
+              <p class="links">
+                <a href="03_web_to_html/C2_web_car_company/paper_case.md">concise case</a>
+                <a href="03_web_to_html/C2_web_car_company/record.pretty.json">full record (audit)</a>
+              </p>
+            </article>
+            
+            <article class="card">
+              <div class="meta">Web-to-HTML — render-and-revise · ★★★★★</div>
+              <h2>C3_web_bookstore</h2>
+              <p>Bookstore page: shrink placeholder and recover layout</p>
+              <a href="03_web_to_html/C3_web_bookstore/paper_card.jpg">
+                <img src="03_web_to_html/C3_web_bookstore/paper_card.jpg" alt="C3_web_bookstore">
+              </a>
+              <p><strong>Query:</strong> Recreate the reference bookstore webpage in HTML and CSS.</p>
+              <p><strong>Answer:</strong> Final self-contained bookstore HTML/CSS returned.</p>
+              <p>初稿中的巨大占位图与修订后的布局差异明显，最终结果和参考截图结构非常接近。</p>
+              <p class="links">
+                <a href="03_web_to_html/C3_web_bookstore/paper_case.md">concise case</a>
+                <a href="03_web_to_html/C3_web_bookstore/record.pretty.json">full record (audit)</a>
+              </p>
+            </article>
+            
+            <article class="card">
+              <div class="meta">Web-to-HTML — render-and-revise · ★★★★</div>
+              <h2>C4_web_travel_agency</h2>
+              <p>Travel page: revise logo scale and section layout</p>
+              <a href="03_web_to_html/C4_web_travel_agency/paper_card.jpg">
+                <img src="03_web_to_html/C4_web_travel_agency/paper_card.jpg" alt="C4_web_travel_agency">
+              </a>
+              <p><strong>Query:</strong> Recreate the reference travel-agency webpage in HTML and CSS.</p>
+              <p><strong>Answer:</strong> Final self-contained travel-agency HTML/CSS returned.</p>
+              <p>蓝黄大色块在论文缩放后依旧清楚，初稿大占位图到最终布局的变化明显。</p>
+              <p class="links">
+                <a href="03_web_to_html/C4_web_travel_agency/paper_case.md">concise case</a>
+                <a href="03_web_to_html/C4_web_travel_agency/record.pretty.json">full record (audit)</a>
+              </p>
+            </article>
+            
+            <article class="card">
+              <div class="meta">Chart — InRangeColorTool candidates · ★★★★★</div>
+              <h2>D1_chart_2021_funding</h2>
+              <p>Grouped bars: isolate one year across all countries</p>
+              <a href="04_chart_in_range_color/D1_chart_2021_funding/paper_card.jpg">
+                <img src="04_chart_in_range_color/D1_chart_2021_funding/paper_card.jpg" alt="D1_chart_2021_funding">
+              </a>
+              <p><strong>Query:</strong> In 2021, what fraction of total funding equals the amount by which the U.S. exceeded China?</p>
+              <p><strong>Answer:</strong> (820 − 310) / 2,510 ≈ 20.3%.</p>
+              <p>单次颜色调用、输出最干净，黄色年度序列与问题直接对应；即使缩到论文尺寸也能看出十根柱子。</p>
+              <p class="links">
+                <a href="04_chart_in_range_color/D1_chart_2021_funding/paper_case.md">concise case</a>
+                <a href="04_chart_in_range_color/D1_chart_2021_funding/record.pretty.json">full record (audit)</a>
+              </p>
+            </article>
+            
+            <article class="card">
+              <div class="meta">Chart — InRangeColorTool candidates · ★★★★★</div>
+              <h2>D2_chart_calorie_segments</h2>
+              <p>Stacked bars: split caloric levels by color</p>
+              <a href="04_chart_in_range_color/D2_chart_calorie_segments/paper_card.jpg">
+                <img src="04_chart_in_range_color/D2_chart_calorie_segments/paper_card.jpg" alt="D2_chart_calorie_segments">
+              </a>
+              <p><strong>Query:</strong> What is the average ratio of high-calorie consumption to combined low- and moderate-calorie consumption?</p>
+              <p><strong>Answer:</strong> Average High / (Low + Moderate) ≈ 1.062.</p>
+              <p>最典型的堆叠柱颜色分解：三次真实 HSV 调用分别取得 Low、Moderate、High，颜色掩膜与数值计算关系直观。</p>
+              <p class="links">
+                <a href="04_chart_in_range_color/D2_chart_calorie_segments/paper_case.md">concise case</a>
+                <a href="04_chart_in_range_color/D2_chart_calorie_segments/record.pretty.json">full record (audit)</a>
+              </p>
+            </article>
+            
+            <article class="card">
+              <div class="meta">Chart — InRangeColorTool candidates · ★★★★★</div>
+              <h2>D3_chart_book_growth</h2>
+              <p>Grouped bars: separate three genres before comparison</p>
+              <a href="04_chart_in_range_color/D3_chart_book_growth/paper_card.jpg">
+                <img src="04_chart_in_range_color/D3_chart_book_growth/paper_card.jpg" alt="D3_chart_book_growth">
+              </a>
+              <p><strong>Query:</strong> What is the ratio of Children&#x27;s Books growth to the combined growth of Poetry and Academic Texts?</p>
+              <p><strong>Answer:</strong> Approximately 0.55 (about 5:9).</p>
+              <p>三种颜色序列都得到规整的十根柱，能清楚体现“分离序列 → 比较首尾增长 → 计算答案”。</p>
+              <p class="links">
+                <a href="04_chart_in_range_color/D3_chart_book_growth/paper_case.md">concise case</a>
+                <a href="04_chart_in_range_color/D3_chart_book_growth/record.pretty.json">full record (audit)</a>
+              </p>
+            </article>
+            
+            <article class="card">
+              <div class="meta">Chart — InRangeColorTool candidates · ★★★★★</div>
+              <h2>D4_chart_retail_sunburst</h2>
+              <p>Sunburst: isolate the dominant hierarchy by color</p>
+              <a href="04_chart_in_range_color/D4_chart_retail_sunburst/paper_card.jpg">
+                <img src="04_chart_in_range_color/D4_chart_retail_sunburst/paper_card.jpg" alt="D4_chart_retail_sunburst">
+              </a>
+              <p><strong>Query:</strong> Within the most prevalent main category, what share does one specific business type typically occupy?</p>
+              <p><strong>Answer:</strong> 37% / 6 ≈ 6.17% (about 6%).</p>
+              <p>非柱状图案例且调用链只有两步，能展示颜色工具也可用于层级图中的语义区域隔离。</p>
+              <p class="links">
+                <a href="04_chart_in_range_color/D4_chart_retail_sunburst/paper_case.md">concise case</a>
+                <a href="04_chart_in_range_color/D4_chart_retail_sunburst/record.pretty.json">full record (audit)</a>
+              </p>
+            </article>
+            
+            <article class="card">
+              <div class="meta">Chart — InRangeColorTool candidates · ★★★★</div>
+              <h2>D5_chart_chrome_bug_growth</h2>
+              <p>Stacked trend: measure one component of total growth</p>
+              <a href="04_chart_in_range_color/D5_chart_chrome_bug_growth/paper_card.jpg">
+                <img src="04_chart_in_range_color/D5_chart_chrome_bug_growth/paper_card.jpg" alt="D5_chart_chrome_bug_growth">
+              </a>
+              <p><strong>Query:</strong> What percentage of the total bug increase from Oct. 2022 to Mar. 2023 was caused by Chrome?</p>
+              <p><strong>Answer:</strong> (235 − 95) / (497 − 190) ≈ 45.5%.</p>
+              <p>两个颜色 observation 都很干净，且直接支撑“局部增长占总增长比例”的像素测量。</p>
+              <p class="links">
+                <a href="04_chart_in_range_color/D5_chart_chrome_bug_growth/paper_case.md">concise case</a>
+                <a href="04_chart_in_range_color/D5_chart_chrome_bug_growth/record.pretty.json">full record (audit)</a>
+              </p>
+            </article>
+            
+  </main>
+</body>
+</html>

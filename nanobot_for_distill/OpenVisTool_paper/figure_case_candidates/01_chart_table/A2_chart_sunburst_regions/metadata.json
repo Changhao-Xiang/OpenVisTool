@@ -1,0 +1,63 @@
+{
+  "id": "A2_chart_sunburst_regions",
+  "lane": "01_chart_table",
+  "source_jsonl": "Chart_14k.jsonl",
+  "source_line": 8420,
+  "domain": "Chart",
+  "rating": 5,
+  "panel_indices": [
+    0,
+    1,
+    3
+  ],
+  "panel_labels": [
+    "Sunburst input",
+    "Crop: Produce",
+    "Crop: Meats"
+  ],
+  "short_title": "Sunburst chart: inspect multiple dense regions",
+  "paper_query": "What is the combined share of the top product in each of the three largest categories?",
+  "paper_steps": [
+    {
+      "call": "crop(chart, region=Produce)",
+      "observation": "The largest Produce item is Leafy Greens at 9%."
+    },
+    {
+      "call": "crop(chart, region=Meats)",
+      "observation": "Free-range Chicken is 4%; a separate Dairy crop finds Greek Yogurt at 6%."
+    }
+  ],
+  "paper_answer": "9% + 6% + 4% = 19%.",
+  "why": "色彩丰富且“整图 → 局部证据”的视觉关系非常直观；三次真实 crop 均保留在 media/。",
+  "caveat": "两个展示 crop 是并列读取；教师思考还指出图中一个子项小计不完全一致，因此若强调数值严谨性优先选 A1。",
+  "recommended": true,
+  "tool_sequence": [
+    "read_file",
+    "crop",
+    "crop",
+    "crop"
+  ],
+  "source_path": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/dataset/OpenVisTool/Chart_14k.jsonl",
+  "source_line_1_based": 8420,
+  "source_record_sha256": "5f4521924effae5a7d41da6feb8f6a74813eb3f85fa38a992b1c6689f6133967",
+  "question": "What is the combined absolute market share of the most prominent product in each of the three largest product categories?",
+  "source_images": [
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/dataset/Chart/ChartVerse-SFT-600K/images/0047228.jpg",
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_47228/0047228_crop_f4ccfcb0.jpg",
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_47228/0047228_crop_baec4254.jpg",
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_47228/0047228_crop_5b5b5ba4.jpg"
+  ],
+  "copied_media": [
+    "media/00_0047228.jpg",
+    "media/01_0047228_crop_f4ccfcb0.jpg",
+    "media/02_0047228_crop_baec4254.jpg",
+    "media/03_0047228_crop_5b5b5ba4.jpg"
+  ],
+  "panel_files": [
+    "panel_1_sunburst_input.jpg",
+    "panel_2_crop_produce.jpg",
+    "panel_3_crop_meats.jpg"
+  ],
+  "session_dir": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_47228",
+  "source_session": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_47228/distill_ChartVerse-SFT-600K_47228.jsonl"
+}

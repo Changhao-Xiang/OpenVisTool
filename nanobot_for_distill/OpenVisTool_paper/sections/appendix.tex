@@ -16,10 +16,10 @@ The tool-use pattern for each domain is supplied as a domain-specific instructio
 \paragraph{Conversion to SFT.}
 Retained sessions are converted to ms-swift training samples that preserve the teacher's reasoning, every tool call with its arguments, and each returned observation. Tool JSON schemas are extracted automatically from the toolset implementations rather than maintained by hand, so the supervised interface matches the agent the student runs at inference.
 
-\subsection{Difficulty and Tool-Use Gain Hyperparameters}
+\subsection{Difficulty and Causal-Utility Hyperparameters}
 \label{app:hyperparams}
 
-Table~\ref{tab:hparams} lists the hyperparameters of the three measurement stages. Both the difficulty filter and the probe for tool-use gain use the same fixed base model $\pi_0$ (Qwen3.5-9B), so the two pass rates $\bar{p}_0$ and $\bar{p}_{\mathrm{pre}}$ are directly comparable when forming the gain $g=\bar{p}_{\mathrm{pre}}-\bar{p}_0$. Difficulty filtering keeps a query when its no-tool avg@$k$ is at most $0.5$, uniformly across domains; the tool-use gain filter keeps a trajectory when $g\ge 0.1$. The per-domain answer evaluator $\mathcal{E}_d$ is shared by all stages: rule-based matching for Chart, Table, and Visual Search (point-in-box for GUI), an LLM judge (Qwen3.5-27B) where surface matching is brittle, and a render-based VLM judge for Web-to-HTML.
+Table~\ref{tab:hparams} lists the hyperparameters of the two probing stages. Both the difficulty filter and the causal-utility probe use the same fixed base model $\pi_0$ (Qwen3.5-9B), so the empirical success rates $\bar{p}_0$ and $\bar{p}_{\mathrm{tool}}$ are directly comparable. Difficulty filtering keeps a query when its no-tool avg@$K$ is at most $0.5$, uniformly across domains; the causal-utility filter keeps a trajectory when $\bar{p}_{\mathrm{tool}}-\bar{p}_0\ge 0.1$. The per-domain answer evaluator $E_d$ is shared by all stages: rule-based matching for Chart, Table, and Visual Search (point-in-box for GUI), an LLM judge (Qwen3.5-27B) where surface matching is brittle, and a render-based VLM judge for Web-to-HTML.
 
 \begin{table}[t]
 \centering
@@ -27,18 +27,18 @@ Table~\ref{tab:hparams} lists the hyperparameters of the three measurement stage
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{lll}
 \toprule
- & Difficulty filter & Tool-use gain probe \\
+ & Difficulty filter & Causal-utility probe \\
 \midrule
 Probe model $\pi_0$ & Qwen3.5-9B & Qwen3.5-9B \\
-Rollouts $k$ (avg@$k$) & 4 & 4 \\
+Rollouts $K$ (avg@$K$) & 4 & 4 \\
 Temperature & 0.7 & 0.7 \\
 Max new tokens & 32768 & 16384 \\
-Observation prefix & --- & teacher $o_{1:m}$ \\
-Per-obs.\ char limit & --- & 10000 \\
-Keep rule & $\bar{p}_0(q)\le 0.5$ & $g(q)\ge 0.1$ \\
+Tool trace & --- & teacher $Z_\tau$ \\
+Per-response limit & --- & 10000 \\
+Keep rule & $\bar{p}_0(x)\le 0.5$ & Rate gain $\ge 0.1$ \\
 \bottomrule
 \end{tabular}
-\caption{Hyperparameters for difficulty filtering and tool-use gain probing. Both stages share the base model $\pi_0$ and the per-domain evaluator $\mathcal{E}_d$. Answer judging uses Qwen3.5-27B; the teacher used for rollout is Qwen3.5-Plus.}
+\caption{Hyperparameters for difficulty filtering and causal-utility probing. Both stages share the base model $\pi_0$ and the per-domain evaluator $E_d$. Answer judging uses Qwen3.5-27B; the teacher used for rollout is Qwen3.5-Plus.}
 \label{tab:hparams}
 \end{table}
 
@@ -95,7 +95,7 @@ One canonical tool-use trajectory per domain, each rendered as image~$\rightarro
 \label{fig:patterns}
 \end{figure*}
 
-\TODO{Rendered thinking~+~tool-call~+~tool-output trajectories, one or two per domain: a Chart \texttt{crop}+\texttt{draw\_line} read, a GUI \texttt{crop}$\to$\texttt{locate\_in\_crop}$\to$\texttt{computer\_use} click, a Visual Search \texttt{crop}+\texttt{draw\_bbox} verification, and a Web-to-HTML \texttt{render\_html}$\to$\texttt{edit\_file} revision loop. Pair each with its $\bar{p}_0$, $\bar{p}_{\mathrm{pre}}$, and gain $g$ to illustrate the tool-use gain criterion.}
+\TODO{Rendered thinking~+~tool-call~+~tool-output trajectories, one or two per domain: a Chart \texttt{crop}+\texttt{draw\_line} read, a GUI \texttt{crop}$\to$\texttt{locate\_in\_crop}$\to$\texttt{computer\_use} click, a Visual Search \texttt{crop}+\texttt{draw\_bbox} verification, and a Web-to-HTML \texttt{render\_html}$\to$\texttt{edit\_file} revision loop. Pair each with its $\bar{p}_0$, $\bar{p}_{\mathrm{tool}}$, and their difference to illustrate the causal-utility criterion.}
 
 \subsection{Prompts}
 \label{app:prompts}

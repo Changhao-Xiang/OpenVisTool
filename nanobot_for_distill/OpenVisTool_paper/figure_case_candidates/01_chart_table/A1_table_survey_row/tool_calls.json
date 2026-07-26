@@ -1,0 +1,21 @@
+[
+  {
+    "name": "enhance_contrast",
+    "arguments": {
+      "image_path": "/mnt/data/LaTeXTablePipeline_italic_0-332.png",
+      "color_mode": "lab"
+    }
+  },
+  {
+    "name": "crop",
+    "arguments": {
+      "image_path": "/mnt/data/LaTeXTablePipeline_italic_0-332_contrast_fb6e77ce.jpg",
+      "crop": [
+        0,
+        380,
+        1000,
+        520
+      ]
+    }
+  }
+]

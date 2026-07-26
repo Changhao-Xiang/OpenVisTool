@@ -1,0 +1,66 @@
+[
+  {
+    "name": "in_range_color",
+    "arguments": {
+      "colorspace": "hsv",
+      "image_path": "/mnt/data/0021629.jpg",
+      "lower": [
+        10,
+        50,
+        200
+      ],
+      "upper": [
+        20,
+        150,
+        255
+      ]
+    }
+  },
+  {
+    "name": "in_range_color",
+    "arguments": {
+      "colorspace": "hsv",
+      "image_path": "/mnt/data/0021629.jpg",
+      "lower": [
+        40,
+        50,
+        200
+      ],
+      "upper": [
+        70,
+        150,
+        255
+      ]
+    }
+  },
+  {
+    "name": "in_range_color",
+    "arguments": {
+      "colorspace": "hsv",
+      "image_path": "/mnt/data/0021629.jpg",
+      "lower": [
+        140,
+        50,
+        200
+      ],
+      "upper": [
+        170,
+        150,
+        255
+      ]
+    }
+  },
+  {
+    "name": "write_file",
+    "arguments": {
+      "content": "# Calculate the growth ratio from the bar chart data\n\n# Children's Books (orange) bounding boxes [x1, y1, x2, y2]\n# Format: [x1, y1, x2, y2] where y1 is the top of the bar and y2 is the bottom (baseline)\nchildren_books_bboxes = [\n    [124, 289, 135, 892],  # 2013\n    [198, 250, 209, 892],  # 2014\n    [272, 229, 282, 892],  # 2015\n    [345, 209, 356, 892],  # 2016\n    [419, 189, 430, 892],  # 2017\n    [493, 168, 503, 892],  # 2018\n    [566, 148, 577, 892],  # 2019\n    [640, 128, 650, 892],  # 2020\n    [713, 108, 724, 892],  # 2021\n    [787, 89, 798, 892],   # 2022\n]\n\n# Poetry (green) bounding boxes\npoetry_bboxes = [\n    [114, 732, 124, 892],  # 2013\n    [187, 712, 197, 892],  # 2014\n    [261, 692, 271, 892],  # 2015\n    [334, 671, 344, 892],  # 2016\n    [408, 651, 418, 892],  # 2017\n    [482, 631, 492, 892],  # 2018\n    [555, 611, 565, 892],  # 2019\n    [629, 592, 639, 892],  # 2020\n    [703, 571, 712, 892],  # 2021\n    [776, 551, 786, 892],  # 2022\n]\n\n# Academic Texts (pink) bounding boxes\nacademic_bboxes = [\n    [136, 611, 146, 892],  # 2013\n    [209, 592, 219, 892],  # 2014\n    [283, 571, 293, 892],  # 2015\n    [357, 551, 367, 892],  # 2016\n    [430, 531, 440, 892],  # 2017\n    [503, 511, 514, 892],  # 2018\n    [577, 490, 588, 892],  # 2019\n    [651, 470, 661, 892],  # 2020\n    [724, 450, 735, 892],  # 2021\n    [798, 431, 808, 892],  # 2022\n]\n\n# Calculate bar heights (baseline is at y=892)\nbaseline = 892\n\n# Children's Books heights\ncb_2013_height = baseline - children_books_bboxes[0][1]  # 892 - 289 = 603\ncb_2022_height = baseline - children_books_bboxes[9][1]  # 892 - 89 = 803\n\n# Poetry heights\npoetry_2013_height = baseline - poetry_bboxes[0][1]  # 892 - 732 = 160\npoetry_2022_height = baseline - poetry_bboxes[9][1]  # 892 - 551 = 341\n\n# Academic Texts heights\nacademic_2013_height = baseline - academic_bboxes[0][1]  # 892 - 611 = 281\nacademic_2022_height = baseline - academic_bboxes[9][1]  # 892 - 431 = 461\n\nprint(f\"Children's Books 2013 height: {cb_2013_height} pixels\")\nprint(f\"Children's Books 2022 height: {cb_2022_height} pixels\")\nprint(f\"Poetry 2013 height: {poetry_2013_height} pixels\")\nprint(f\"Poetry 2022 height: {poetry_2022_height} pixels\")\nprint(f\"Academic 2013 height: {academic_2013_height} pixels\")\nprint(f\"Academic 2022 height: {academic_2022_height} pixels\")\n\n# Calculate growth in pixels\ncb_growth_pixels = cb_2022_height - cb_2013_height\npoetry_growth_pixels = poetry_2022_height - poetry_2013_height\nacademic_growth_pixels = academic_2022_height - academic_2013_height\n\nprint(f\"\\nChildren's Books growth: {cb_growth_pixels} pixels\")\nprint(f\"Poetry growth: {poetry_growth_pixels} pixels\")\nprint(f\"Academic growth: {academic_growth_pixels} pixels\")\n\n# Combined growth of Poetry and Academic\ncombined_growth_pixels = poetry_growth_pixels + academic_growth_pixels\nprint(f\"Combined Poetry + Academic growth: {combined_growth_pixels} pixels\")\n\n# Now I need to find the scale factor (pixels per unit)\n# Looking at the chart, the y-axis goes from 0 to 200+\n# Let me estimate based on visual inspection:\n# Children's Books 2013 appears to be at 150, 2022 at 200\n# So 603 pixels ≈ 150 units, 803 pixels ≈ 200 units\n\n# Let's calculate the scale factor\n# If 603 pixels = 150 units, then scale = 150/603 = 0.2488 units/pixel\n# If 803 pixels = 200 units, then scale = 200/803 = 0.2491 units/pixel\n# Average: ~0.249 units/pixel\n\nscale_factor = 200 / 803  # Using 2022 Children's Books as reference\nprint(f\"\\nScale factor: {scale_factor} units/pixel\")\n\n# Convert growth to actual values\ncb_growth = cb_growth_pixels * scale_factor\npoetry_growth = poetry_growth_pixels * scale_factor\nacademic_growth = academic_growth_pixels * scale_factor\ncombined_growth = combined_growth_pixels * scale_factor\n\nprint(f\"\\nChildren's Books growth: {cb_growth:.2f} units\")\nprint(f\"Poetry growth: {poetry_growth:.2f} units\")\nprint(f\"Academic growth: {academic_growth:.2f} units\")\nprint(f\"Combined Poetry + Academic growth: {combined_growth:.2f} units\")\n\n# Calculate the ratio\nratio = cb_growth / combined_growth\nprint(f\"\\nRatio (Children's Books growth / Combined Poetry + Academic growth): {ratio:.4f}\")\nprint(f\"Ratio as fraction: {cb_growth_pixels}/{combined_growth_pixels} = {cb_growth_pixels/combined_growth_pixels:.4f}\")\n",
+      "path": "/mnt/data/calculate_ratio.py"
+    }
+  },
+  {
+    "name": "exec",
+    "arguments": {
+      "command": "cd /mnt/data && python calculate_ratio.py"
+    }
+  }
+]

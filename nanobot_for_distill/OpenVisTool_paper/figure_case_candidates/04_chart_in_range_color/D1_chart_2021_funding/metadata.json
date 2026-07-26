@@ -1,0 +1,52 @@
+{
+  "id": "D1_chart_2021_funding",
+  "lane": "04_chart_in_range_color",
+  "source_jsonl": "Chart_14k.jsonl",
+  "source_line": 10155,
+  "domain": "Chart",
+  "rating": 5,
+  "panel_indices": [
+    0,
+    1
+  ],
+  "panel_labels": [
+    "Grouped-bar input",
+    "2021 series isolated"
+  ],
+  "short_title": "Grouped bars: isolate one year across all countries",
+  "paper_query": "In 2021, what fraction of total funding equals the amount by which the U.S. exceeded China?",
+  "paper_steps": [
+    {
+      "call": "InRangeColorTool(chart, yellow/2021)",
+      "observation": "Ten clean yellow bars are isolated; their bounding boxes provide the 2021 heights."
+    }
+  ],
+  "paper_answer": "(820 − 310) / 2,510 ≈ 20.3%.",
+  "why": "单次颜色调用、输出最干净，黄色年度序列与问题直接对应；即使缩到论文尺寸也能看出十根柱子。",
+  "caveat": "只有一个关键视觉 observation；后续两次 exec 只是把 bbox 高度换算并求比例。",
+  "recommended": true,
+  "tool_sequence": [
+    "read_file",
+    "in_range_color",
+    "exec",
+    "exec"
+  ],
+  "source_path": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/dataset/OpenVisTool/Chart_14k.jsonl",
+  "source_line_1_based": 10155,
+  "source_record_sha256": "e186d085de269ba1ba9b5f5d1538fa729c09883c311a903d5f934fa5c47227c5",
+  "question": "What fraction of the total funding allocated in 2021 for international anti-corruption initiatives was the amount by which the United States' contribution exceeded China's contribution?",
+  "source_images": [
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/dataset/Chart/ChartVerse-SFT-600K/images/0050695.jpg",
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_50695/0050695_in_range_color_1d372756.jpg"
+  ],
+  "copied_media": [
+    "media/00_0050695.jpg",
+    "media/01_0050695_in_range_color_1d372756.jpg"
+  ],
+  "panel_files": [
+    "panel_1_grouped_bar_input.jpg",
+    "panel_2_2021_series_isolated.jpg"
+  ],
+  "session_dir": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_50695",
+  "source_session": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_50695/distill_ChartVerse-SFT-600K_50695.jsonl"
+}

@@ -1,0 +1,67 @@
+{
+  "id": "D5_chart_chrome_bug_growth",
+  "lane": "04_chart_in_range_color",
+  "source_jsonl": "Chart_14k.jsonl",
+  "source_line": 12163,
+  "domain": "Chart",
+  "rating": 4,
+  "panel_indices": [
+    0,
+    3,
+    4
+  ],
+  "panel_labels": [
+    "Stacked-bar input",
+    "Chrome segments",
+    "Total-height anchors"
+  ],
+  "short_title": "Stacked trend: measure one component of total growth",
+  "paper_query": "What percentage of the total bug increase from Oct. 2022 to Mar. 2023 was caused by Chrome?",
+  "paper_steps": [
+    {
+      "call": "InRangeColorTool(chart, orange HSV)",
+      "observation": "Chrome segments are isolated across all dates; endpoint heights correspond to about 95 and 235 bugs."
+    },
+    {
+      "call": "InRangeColorTool(chart, purple HSV)",
+      "observation": "Top segments provide full-bar anchors for the labeled totals 190 and 497."
+    }
+  ],
+  "paper_answer": "(235 − 95) / (497 − 190) ≈ 45.5%.",
+  "why": "两个颜色 observation 都很干净，且直接支撑“局部增长占总增长比例”的像素测量。",
+  "caveat": "完整调用链含 enhance/crop 和脚本计算；结果是基于像素高度的近似值。",
+  "recommended": false,
+  "tool_sequence": [
+    "enhance_contrast",
+    "crop",
+    "in_range_color",
+    "in_range_color",
+    "write_file",
+    "exec"
+  ],
+  "source_path": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/dataset/OpenVisTool/Chart_14k.jsonl",
+  "source_line_1_based": 12163,
+  "source_record_sha256": "8f6f5b6b3e2f38bb995b02ceee1114c2f682160c9f6b18ba993cea3c6aea588c",
+  "question": "What percentage of the total increase in web compatibility bugs observed from October 1, 2022, to March 1, 2023, was specifically caused by Chrome browser issues?",
+  "source_images": [
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/dataset/Chart/ChartVerse-SFT-600K/images/0063303.jpg",
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_63303/0063303_contrast_a6377bce.jpg",
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_63303/0063303_contrast_a6377bce_crop_e4d3d5de.jpg",
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_63303/0063303_contrast_a6377bce_in_range_color_14c6e133.jpg",
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_63303/0063303_contrast_a6377bce_in_range_color_d057171c.jpg"
+  ],
+  "copied_media": [
+    "media/00_0063303.jpg",
+    "media/01_0063303_contrast_a6377bce.jpg",
+    "media/02_0063303_contrast_a6377bce_crop_e4d3d5de.jpg",
+    "media/03_0063303_contrast_a6377bce_in_range_color_14c6e133.jpg",
+    "media/04_0063303_contrast_a6377bce_in_range_color_d057171c.jpg"
+  ],
+  "panel_files": [
+    "panel_1_stacked_bar_input.jpg",
+    "panel_2_chrome_segments.jpg",
+    "panel_3_total_height_anchors.jpg"
+  ],
+  "session_dir": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_63303",
+  "source_session": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/ChartVerse-SFT-qwen35-9b_filtered/session_63303/distill_ChartVerse-SFT-600K_63303.jsonl"
+}

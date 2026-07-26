@@ -1,0 +1,67 @@
+[
+  {
+    "name": "enhance_contrast",
+    "arguments": {
+      "image_path": "/mnt/data/0063303.jpg"
+    }
+  },
+  {
+    "name": "crop",
+    "arguments": {
+      "crop": [
+        50,
+        200,
+        200,
+        850
+      ],
+      "image_path": "/mnt/data/0063303_contrast_a6377bce.jpg"
+    }
+  },
+  {
+    "name": "in_range_color",
+    "arguments": {
+      "colorspace": "hsv",
+      "image_path": "/mnt/data/0063303_contrast_a6377bce.jpg",
+      "lower": [
+        10,
+        150,
+        150
+      ],
+      "upper": [
+        25,
+        255,
+        255
+      ]
+    }
+  },
+  {
+    "name": "in_range_color",
+    "arguments": {
+      "colorspace": "hsv",
+      "image_path": "/mnt/data/0063303_contrast_a6377bce.jpg",
+      "lower": [
+        120,
+        50,
+        150
+      ],
+      "upper": [
+        160,
+        255,
+        255
+      ]
+    }
+  },
+  {
+    "name": "write_file",
+    "arguments": {
+      "content": "# Calculate the percentage of total increase caused by Chrome\n\n# From the color detection:\n# Chrome (orange) bboxes: [x1, y1, x2, y2]\n# Bottom of all bars: y = 853\n\n# First bar (2022-10-01):\nchrome_oct_y1 = 747\ntotal_oct_y1 = 642  # top of purple (Edge) section\ntotal_oct_bugs = 190\n\n# Last bar (2023-03-01):\nchrome_mar_y1 = 592\ntotal_mar_y1 = 301  # top of purple (Edge) section\ntotal_mar_bugs = 497\n\n# Bottom of chart (y-axis 0)\ny_bottom = 853\n\n# Calculate pixel heights\nchrome_oct_pixels = y_bottom - chrome_oct_y1\nchrome_mar_pixels = y_bottom - chrome_mar_y1\ntotal_oct_pixels = y_bottom - total_oct_y1\ntotal_mar_pixels = y_bottom - total_mar_y1\n\nprint(f\"Chrome Oct pixels: {chrome_oct_pixels}\")\nprint(f\"Chrome Mar pixels: {chrome_mar_pixels}\")\nprint(f\"Total Oct pixels: {total_oct_pixels}\")\nprint(f\"Total Mar pixels: {total_mar_pixels}\")\n\n# Calculate scale (pixels per bug) - should be consistent\nscale_oct = total_oct_pixels / total_oct_bugs\nscale_mar = total_mar_pixels / total_mar_bugs\nscale_avg = (scale_oct + scale_mar) / 2\n\nprint(f\"\\nScale Oct: {scale_oct:.4f} pixels/bug\")\nprint(f\"Scale Mar: {scale_mar:.4f} pixels/bug\")\nprint(f\"Average scale: {scale_avg:.4f} pixels/bug\")\n\n# Calculate Chrome bug counts\nchrome_oct_bugs = chrome_oct_pixels / scale_avg\nchrome_mar_bugs = chrome_mar_pixels / scale_avg\n\nprint(f\"\\nChrome Oct bugs: {chrome_oct_bugs:.2f}\")\nprint(f\"Chrome Mar bugs: {chrome_mar_bugs:.2f}\")\n\n# Calculate increases\ntotal_increase = total_mar_bugs - total_oct_bugs\nchrome_increase = chrome_mar_bugs - chrome_oct_bugs\n\nprint(f\"\\nTotal increase: {total_increase} bugs\")\nprint(f\"Chrome increase: {chrome_increase:.2f} bugs\")\n\n# Calculate percentage\npercentage = (chrome_increase / total_increase) * 100\nprint(f\"\\nPercentage of total increase from Chrome: {percentage:.2f}%\")\n",
+      "path": "/mnt/data/calculate_chrome_percentage.py"
+    }
+  },
+  {
+    "name": "exec",
+    "arguments": {
+      "command": "cd /mnt/data && python calculate_chrome_percentage.py"
+    }
+  }
+]

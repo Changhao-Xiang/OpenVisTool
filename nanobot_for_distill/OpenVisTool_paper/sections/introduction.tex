@@ -12,15 +12,23 @@ The evidence suggests that effective visual tool use is learned from causally gr
 
 \end{abstract}
 
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.9\columnwidth]{figures/tool_necessity.pdf}
+    \caption{\textbf{Tool necessity analysis.} We query each dataset's teacher model \emph{without} tool access on 1K sampled instances that were originally annotated with tool calls. If the teacher answers correctly without tools, the tool call is deemed unnecessary. Existing data (Thyme-2round) contains 43.4\% unnecessary tool calls—trajectories where the teacher already knows the answer yet still invokes tools due to prompt induction. Our OpenVisTool-42K reduces this ratio to 30.2\%, yielding training signal where tool observations are more likely to causally contribute to the final answer.}
+    \label{fig:tool_necessity}
+\end{figure}
+
 \begin{figure*}
     \centering
     \includegraphics[width=\textwidth]{figures/motivation.png}
     \caption{xxx.}    
 \end{figure*}
 
+
 \section{Introduction}
 \label{sec:introduction}
-
 
 Large language models become substantially more capable when equipped with external tools such as code interpreters \citep{xue2025simpletir,feng2025retool} and search engines \citep{jin2025searchr1,Search-o1,Li2025WebThinker}. 
 For multimodal models, the bottleneck is visual: encoding an image into a fixed set of tokens inevitably discards the fine-grained evidence that many questions hinge on~\citep{su2025thinkingsurvey}.
@@ -33,6 +41,8 @@ However, not all trajectories contribute equally, and \textit{what makes one gen
 Existing synthesis pipelines typically filter for trajectory quality through outcome-based rejection sampling: a trace is retained if it is executable, well-formed, and yields a correct final answer \citep{lai2026minio3,guo2025codevision}.
 This criterion, however, conflates outcome validity with the utility of the tool calls behind it. 
 A strong teacher can often reach the right answer without any visual tools (via parametric knowledge, reasoning shortcuts, or coarse image cues), yet still issues tool calls simply because the synthesis prompt instructs it to~\citep{hou2025codev,zhao2026focus}.
+% We verify this empirically in~\ref{fig:tool_necessity}: when the teacher model behind a recent tool-learning dataset~\citep{zhang2026thyme} is queried \emph{without} tools, it already answers 43.4\% of the tool-call samples 
+% correctly---nearly half of the annotated tool uses are unnecessary.
 Such trajectories pass outcome-based filtering while providing \textit{spurious supervision}: the visual observations appear in the reasoning trace but make no causal contribution to the answer. 
 A student trained on such data thus learns correlation rather than causation: it learns that tool calls \textit{accompany} correct answers, not that tool observations \textit{ground} them.
 This failure mode is invisible to any filter that inspects only outcomes. Answering the open question above thus requires shifting the object of evaluation from whether a trajectory ends correctly to whether its tool calls do real work: \textit{would the answer still hold if the visual observations were taken away?}

@@ -1,0 +1,59 @@
+{
+  "id": "A4_table_social_metrics",
+  "lane": "01_chart_table",
+  "source_jsonl": "Table_5k.jsonl",
+  "source_line": 878,
+  "domain": "Table",
+  "rating": 4,
+  "panel_indices": [
+    0,
+    1,
+    2
+  ],
+  "panel_labels": [
+    "Input table",
+    "Twitter row",
+    "Facebook row"
+  ],
+  "short_title": "Social metrics table: compare two distant rows",
+  "paper_query": "Were Twitter retweets more numerous than Facebook posts?",
+  "paper_steps": [
+    {
+      "call": "crop(table, row=Twitter Retweets)",
+      "observation": "Twitter Retweets = 800."
+    },
+    {
+      "call": "crop(table, row=Facebook Posts)",
+      "observation": "Facebook Posts = 400."
+    }
+  ],
+  "paper_answer": "True — 800 retweets vs. 400 Facebook posts.",
+  "why": "问题简单，两个 crop 分别提供比较所需的数值，读者无需理解复杂背景。",
+  "caveat": "两次 crop 为并列证据，不含额外视觉变换。",
+  "recommended": false,
+  "tool_sequence": [
+    "crop",
+    "crop"
+  ],
+  "source_path": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/dataset/OpenVisTool/Table_5k.jsonl",
+  "source_line_1_based": 878,
+  "source_record_sha256": "c99cc0c8c3d92bdc1458743ef17ed642d0219d21b9f07055ad5397e5c52813d8",
+  "question": "True or False: There were more retweets than posts on Facebook.",
+  "source_images": [
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/dataset/images/CoSyn-400K/HTMLTablePipeline_freq_2-9.png",
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/CoSyn-400K/session_47648/HTMLTablePipeline_freq_2-9_crop_9b3d6d77.jpg",
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/CoSyn-400K/session_47648/HTMLTablePipeline_freq_2-9_crop_59e25156.jpg"
+  ],
+  "copied_media": [
+    "media/00_HTMLTablePipeline_freq_2-9.png",
+    "media/01_HTMLTablePipeline_freq_2-9_crop_9b3d6d77.jpg",
+    "media/02_HTMLTablePipeline_freq_2-9_crop_59e25156.jpg"
+  ],
+  "panel_files": [
+    "panel_1_input_table.png",
+    "panel_2_twitter_row.jpg",
+    "panel_3_facebook_row.jpg"
+  ],
+  "session_dir": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/CoSyn-400K/session_47648",
+  "source_session": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/CoSyn-400K/session_47648/distill_CoSyn-400K_47648.jsonl"
+}

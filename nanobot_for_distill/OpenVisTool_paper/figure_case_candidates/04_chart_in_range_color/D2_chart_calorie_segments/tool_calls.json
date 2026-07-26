@@ -1,0 +1,66 @@
+[
+  {
+    "name": "in_range_color",
+    "arguments": {
+      "colorspace": "hsv",
+      "image_path": "/mnt/data/0051236.jpg",
+      "lower": [
+        0,
+        50,
+        200
+      ],
+      "upper": [
+        15,
+        255,
+        255
+      ]
+    }
+  },
+  {
+    "name": "in_range_color",
+    "arguments": {
+      "colorspace": "hsv",
+      "image_path": "/mnt/data/0051236.jpg",
+      "lower": [
+        100,
+        50,
+        200
+      ],
+      "upper": [
+        130,
+        255,
+        255
+      ]
+    }
+  },
+  {
+    "name": "in_range_color",
+    "arguments": {
+      "colorspace": "hsv",
+      "image_path": "/mnt/data/0051236.jpg",
+      "lower": [
+        50,
+        50,
+        200
+      ],
+      "upper": [
+        70,
+        255,
+        255
+      ]
+    }
+  },
+  {
+    "name": "write_file",
+    "arguments": {
+      "content": "# Calculate the average ratio of high-calorie to combined low+moderate consumption\n\n# Plot area: x from 129 to 977, so width = 848 pixels = 100%\nplot_width = 977 - 129  # 848 pixels\n\n# Data from color detection (x1, x2 for each segment)\n# Format: (low_end, moderate_end, high_end) - all relative to plot start at x=129\ncategories = {\n    \"Fast Food\": {\"low\": 467-129, \"mod\": 722-468, \"high\": 977-723},\n    \"Candy and Snacks\": {\"low\": 425-129, \"mod\": 637-425, \"high\": 977-638},\n    \"Soft Drinks\": {\"low\": 382-129, \"mod\": 552-383, \"high\": 977-553},\n    \"Pizza\": {\"low\": 340-129, \"mod\": 552-341, \"high\": 977-553},\n    \"Sandwiches\": {\"low\": 297-129, \"mod\": 552-298, \"high\": 977-553},\n    \"Burgers\": {\"low\": 382-129, \"mod\": 595-383, \"high\": 977-596},\n    \"Fries\": {\"low\": 340-129, \"mod\": 595-341, \"high\": 977-596},\n    \"Chicken Wings\": {\"low\": 255-129, \"mod\": 467-256, \"high\": 977-468},\n    \"Pasta Dishes\": {\"low\": 297-129, \"mod\": 552-298, \"high\": 977-553},\n    \"Vegetable Plates\": {\"low\": 212-129, \"mod\": 382-213, \"high\": 977-383},\n}\n\n# Convert to percentages\nfor cat in categories:\n    low_pct = categories[cat][\"low\"] / plot_width * 100\n    mod_pct = categories[cat][\"mod\"] / plot_width * 100\n    high_pct = categories[cat][\"high\"] / plot_width * 100\n    categories[cat][\"low_pct\"] = low_pct\n    categories[cat][\"mod_pct\"] = mod_pct\n    categories[cat][\"high_pct\"] = high_pct\n    categories[cat][\"ratio\"] = high_pct / (low_pct + mod_pct)\n\n# Print results\nprint(\"Category breakdown (percentages):\")\nprint(\"-\" * 80)\nfor cat, data in categories.items():\n    print(f\"{cat:20s}: Low={data['low_pct']:.2f}%, Mod={data['mod_pct']:.2f}%, High={data['high_pct']:.2f}%, Ratio={data['ratio']:.3f}\")\n\n# Calculate average ratio\nratios = [data[\"ratio\"] for data in categories.values()]\navg_ratio = sum(ratios) / len(ratios)\n\nprint(\"\\n\" + \"=\" * 80)\nprint(f\"Average ratio of High to (Low + Moderate): {avg_ratio:.4f}\")\nprint(f\"Individual ratios: {ratios}\")\nprint(f\"Sum of ratios: {sum(ratios):.4f}\")\n",
+      "path": "/mnt/data/calculate_ratio.py"
+    }
+  },
+  {
+    "name": "exec",
+    "arguments": {
+      "command": "cd /mnt/data && python calculate_ratio.py"
+    }
+  }
+]

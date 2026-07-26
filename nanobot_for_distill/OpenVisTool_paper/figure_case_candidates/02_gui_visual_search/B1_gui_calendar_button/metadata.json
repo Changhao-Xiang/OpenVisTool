@@ -1,0 +1,60 @@
+{
+  "id": "B1_gui_calendar_button",
+  "lane": "02_gui_visual_search",
+  "source_jsonl": "GUI-Grounding_11k.jsonl",
+  "source_line": 816,
+  "domain": "GUI Grounding",
+  "rating": 5,
+  "panel_indices": [
+    0,
+    1,
+    2
+  ],
+  "panel_labels": [
+    "GUI input",
+    "Target crop",
+    "BBox verification"
+  ],
+  "short_title": "Calendar GUI: localize and click “Edit Details…”",
+  "paper_query": "Click “Edit Details…” in the calendar event dialog.",
+  "paper_steps": [
+    {
+      "call": "crop(screenshot, event_dialog)",
+      "observation": "The target button becomes legible in the dialog."
+    },
+    {
+      "call": "draw_bbox(target) + computer_use(click)",
+      "observation": "The verified target center is [353, 453]."
+    }
+  ],
+  "paper_answer": "Click issued at [353, 453].",
+  "why": "标准且完整的 crop → draw_bbox → computer_use 轨迹；目标按钮语义明确，截图干净。",
+  "caveat": "最终 bbox 在全图中较小，排版时建议使用 crop 与 bbox 的局部视图。",
+  "recommended": true,
+  "tool_sequence": [
+    "crop",
+    "draw_bbox",
+    "computer_use"
+  ],
+  "source_path": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/dataset/OpenVisTool/GUI-Grounding_11k.jsonl",
+  "source_line_1_based": 816,
+  "source_record_sha256": "a0b3f1b98a5b170fc65a90d37690ef4d15bda9cc00d587f3ff3508230c50c813",
+  "question": "Click on the \"Edit Details...\" button to access the detailed event configuration settings where the date, time, reminders, and notes can be properly configured.",
+  "source_images": [
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/dataset/GUI/AgentNet_processed/images_ubuntu/0566972a-4df8-4084-a074-143913f3bc75.png",
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/AgentNet_ubuntu/session_2754/0566972a-4df8-4084-a074-143913f3bc75_crop_cc1eeee9.jpg",
+    "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/AgentNet_ubuntu/session_2754/0566972a-4df8-4084-a074-143913f3bc75_bbox_44bfc6ac.jpg"
+  ],
+  "copied_media": [
+    "media/00_0566972a-4df8-4084-a074-143913f3bc75.png",
+    "media/01_0566972a-4df8-4084-a074-143913f3bc75_crop_cc1eeee9.jpg",
+    "media/02_0566972a-4df8-4084-a074-143913f3bc75_bbox_44bfc6ac.jpg"
+  ],
+  "panel_files": [
+    "panel_1_gui_input.png",
+    "panel_2_target_crop.jpg",
+    "panel_3_bbox_verification.jpg"
+  ],
+  "session_dir": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/AgentNet_ubuntu/session_2754",
+  "source_session": "/mnt/afs_reason/xiangchanghao/Sensetime/nanobot_for_distill/workspaces/qwen35plus/AgentNet_ubuntu/session_2754/distill_AgentNet_processed_2754.jsonl"
+}
