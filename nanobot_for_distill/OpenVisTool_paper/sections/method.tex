@@ -1,7 +1,7 @@
 \begin{figure*}
     \centering
     \includegraphics[width=\textwidth]{figures/synthesis_pipeline.pdf}
-    \caption{The three-stage \method data pipeline. \textit{Difficulty Screening} selects queries that the screening model cannot reliably answer from its initial image encoding alone; \textit{Domain-Specific Tool-Use Patterns} guide the teacher to acquire evidence suited to each domain; and \textit{Supervision Verification} retains trajectories that satisfy both outcome validity and causal utility.}
+    \caption{Overview of the three-stage \method data pipeline. \textbf{Difficulty Screening} identifies queries that the probe model cannot reliably solve from the original image alone. \textbf{Domain-Specific Tool-Use Patterns} guide a stronger teacher to acquire evidence that addresses each domain's visual bottleneck. \textbf{Supervision Verification} determines whether each trajectory is instructive: it must achieve a valid outcome, and its tool observations must causally improve the probe model's answer reliability. Only trajectories satisfying both criteria are retained to form OpenVisTool-42K.}
     \label{fig:pipeline}
 \end{figure*}
 
