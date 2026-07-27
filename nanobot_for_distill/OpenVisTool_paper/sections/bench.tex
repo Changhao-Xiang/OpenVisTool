@@ -18,4 +18,4 @@ These sources already require active visual interaction---precise localization, 
 \end{itemize}
 
 \paragraph{Evaluation protocol.}
-Each domain uses a task-specific evaluator. Chart, Table, and Visual Search use an extraction pipeline followed by LLM judging for binary correctness; GUI uses point-in-box accuracy; and and Web-to-HTML follows the official Vision2Web evaluation protocol, measuring component-level visual fidelity between the rendered output and reference page on a $0$--$100$ scale. We report each domain score and their macro-average under the avg@$k$ protocol.
+Each domain uses a task-specific evaluator. Chart, Table, and Visual Search use an extraction pipeline followed by LLM judging for binary correctness; GUI uses point-in-box accuracy; and and Web-to-HTML follows the official Vision2Web evaluation protocol, measuring component-level visual fidelity between the rendered output and reference page on a $0$--$100$ scale. We report each domain score and their macro-average under the avg@4 protocol.

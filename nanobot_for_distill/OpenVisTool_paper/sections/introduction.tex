@@ -15,16 +15,23 @@ The evidence suggests that effective visual tool use is learned from causally gr
 
 \begin{figure}[t]
     \centering
+
+    \includegraphics[width=\columnwidth]{figures/traj_contrast.pdf}
+
+    \vspace{2mm}
+    \hrule
+    \vspace{2mm}
+
     \includegraphics[width=0.9\columnwidth]{figures/tool_necessity.pdf}
-    \caption{\textbf{Tool necessity analysis.} We query each dataset's teacher model \emph{without} tool access on 1K sampled instances that were originally annotated with tool calls. If the teacher answers correctly without tools, the tool call is deemed unnecessary. Existing data (Thyme-2round) contains 43.4\% unnecessary tool calls—trajectories where the teacher already knows the answer yet still invokes tools due to prompt induction. Our OpenVisTool-42K reduces this ratio to 30.2\%, yielding training signal where tool observations are more likely to causally contribute to the final answer.}
+    \caption{\textbf{Tool necessity analysis.} (Top) Two trajectories that both invoke tools but differ in supervision quality: a spurious trajectory where the model already knows the answer and the tool call is redundant; versus an instructive trajectory where the tool provides missing evidence that causally leads to the correct answer. (Bottom) We measure tool necessity by querying each teacher model without tool access on 1K instances—if it still answers correctly, the tool call is deemed unnecessary. Our OpenVisTool-42K achieves 69.8\% tool-necessary instances (+13.2 pp over Thyme-2round), indicating that tool observations more reliably serve as genuine training signal.}
     \label{fig:tool_necessity}
 \end{figure}
 
-\begin{figure*}
-    \centering
-    \includegraphics[width=\textwidth]{figures/motivation.png}
-    \caption{xxx.}    
-\end{figure*}
+% \begin{figure*}
+%     \centering
+%     \includegraphics[width=\textwidth]{figures/motivation.png}
+%     \caption{xxx.}
+% \end{figure*}
 
 
 \section{Introduction}

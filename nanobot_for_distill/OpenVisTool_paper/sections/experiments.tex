@@ -53,33 +53,34 @@ To test whether the tool-use capability learned from our five training domains t
 % \paragraph{Gains hold on benchmarks we did not select.}
 % To verify that the tool-use capability learned from our five training domains (Chart, GUI, Table, VisualSearch, and Web2HTML) is not domain-specific, we evaluate on two held-out benchmarks—Agentic-MME and VTC-Bench—that cover different visual scenarios unseen during training. As shown in Tab.~\ref{tab:main}, models trained on \dataset{} consistently outperform their no-tool counterparts on both out-of-distribution benchmarks (e.g., Qwen3.5-27B: +4.0 points on Agentic-MME and +10.3 points on VTC-Bench). This demonstrates that our models do not merely memorize domain-specific tool-calling patterns, but instead acquire a transferable skill of knowing \emph{when} and \emph{how} to invoke visual tools, which readily extends to novel tasks and visual contexts.
 
-\subsection{Ablation Study}
-\label{sec:ablation_gain}
-\label{sec:notool_traj}
-To test the central premise of \method{}---that effective visual tool-use learning requires instructive trajectories whose answers are valid and whose tool observations are causally useful---we isolate the contribution of these two properties and separate their effect from naive SFT on the same hard queries. Under controlled conditions, we train Qwen3.5-9B on the same query set and training budget using four supervision variants: (1)~full \dataset{} (outcome validity $\cap$ causal utility), (2)~outcome-validity-only, (3)~causal-utility-only, and (4)~no-tool-trajectory SFT (trajectories without any tool invocation).
-
-
-\paragraph{Benefits come from tool-use trajectories, not hard-query SFT.}
-As shown in Figure~\ref{fig:ablation}, every tool-augmented variant substantially outperforms the no-tool-trajectory SFT baseline, with the full instructive variant gaining 8.7 points. This confirms that the improvements stem from learning tool use rather than simply training on additional difficult queries.
-
-
-\paragraph{Both properties are needed to make trajectories instructive.}
-Requiring both outcome validity and causal utility consistently outperforms using either criterion alone, with outcome-validity-only and causal-utility-only trailing by 1.7 and 3.4 points, respectively.
-The two properties exclude complementary forms of spurious supervision: outcome validity prevents the model from imitating trajectories that end in incorrect answers, while causal utility prevents it from imitating tool interactions whose observations provide no measurable benefit. Their conjunction, which defines an instructive trajectory in Section~\ref{sec:instructive-trajectory}, yields the strongest training signal.
-
-
-\paragraph{Instructive trajectories yield more useful tool interactions.}
-To probe the learned behavior beyond the accuracy of the fine-tuned models themselves, we replay their tool-interaction trajectories to the original Qwen3.5-9B base model. The replayed context contains only tool names, invocation arguments, and returned observations; all hidden reasoning and final answers from the trajectory-generating model are excluded, ruling out direct copying of the generator's answer or imitation of its rationale. As shown in Table~\ref{tab:trajectory_replay}, trajectories from both trained models improve the base model on all three benchmarks, but those from the instructively trained model consistently outperform correctness-only trajectories by 2.4 points on \benchname, 1.2 on Agentic-MME, and 1.6 on VTC-Bench. This behavior-level transfer suggests that supervision grounded in causal utility induces an evidence-acquisition policy whose resulting interactions are more useful to another model, rather than merely producing tool calls that accompany successful outcomes.
-
-\input{tables/tab_trajectory_replay}
-
 \begin{figure}[t]
     \centering
     \includegraphics[width=0.9\columnwidth]{figures/fig_ablation.pdf}
     % \caption{Comparison of training variants.}
-    \caption{Ablation of the two properties that define an instructive trajectory (Qwen3.5-9B). Requiring both outcome validity and causal utility yields the strongest training signal, outperforming either property alone and the no-tool-trajectory SFT baseline.}
+    \caption{Ablation on double rejection sampling (Qwen3.5-9B): both filters together yield the strongest training signal, outperforming each alone and the no-tool SFT baseline by +13.7 points.}
     \label{fig:ablation}
 \end{figure}
+
+\input{tables/tab_trajectory_replay}
+
+\subsection{Ablation Study}
+\label{sec:ablation_gain}
+\label{sec:notool_traj}
+% To validate our filtering strategy and confirm that fine-tuning gains stem from learned tool-use capability rather than naive SFT on hard queries, we compare four data variants under controlled conditions. All variants train Qwen3.5-9B on the same query set, differing only in the retention rule: (1)~full \dataset{} (outcome validity $\cap$ causal utility), (2)~outcome-validity-only, (3)~causal-utility-only, and (4)~no-tool-trajectory SFT (trajectories without any tool invocation).
+To validate that effective visual tool-use learning requires both correct answers and causally useful tool trace, we isolate the contribution of these two properties and separate their effect from naive SFT on the same queries. Under controlled conditions, we train Qwen3.5-9B on the same query set and training budget using four supervision variants: (1)~full \dataset{} (outcome validity $\cap$ causal utility), (2)~outcome-validity-only, (3)~causal-utility-only, and (4)~no-tool-trajectory SFT (trajectories without any tool invocation).
+
+
+\paragraph{Gains originate from tool-use, not from SFT alone.}
+As shown in Figure~\ref{fig:ablation}, every tool-augmented variant outperforms the no-tool-trajectory SFT baseline (+8.7 points on average), confirming that improvements stem from learned tool invocation rather than simply training on additional difficult queries.
+
+
+\paragraph{Both filters are complementary and necessary.}
+Intersecting both filters consistently dominates either filter in isolation, with outcome-validity-only and causal-utility-only trailing by 1.7 and 3.4 points, respectively.
+The two filters address distinct failure modes: outcome validity removes demonstrations that lead to incorrect answers and would teach erroneous behavior, while causal utility discards trajectories where tools are invoked but their observations contribute no measurable benefit to reaching the solution. Their combination yields the highest-quality training signal.
+
+
+\paragraph{Instructive filtering yields more useful tool interactions.}
+To probe the learned behavior beyond the accuracy of the fine-tuned models themselves, we replay their tool-interaction trajectories to the original Qwen3.5-9B base model. The replayed context contains only tool names, invocation arguments, and returned observations; all hidden reasoning and final answers from the trajectory-generating model are excluded, ruling out direct copying of the generator's answer or imitation of its rationale. As shown in Table~\ref{tab:trajectory_replay}, trajectories from both trained models improve the base model on all three benchmarks, but those from the instructively trained model consistently outperform correctness-only trajectories by 2.4 points on \benchname, 1.2 on Agentic-MME, and 1.6 on VTC-Bench. This behavior-level transfer suggests that causal-utility filtering induces an evidence-acquisition policy whose resulting interactions are more useful to another model, rather than merely producing tool calls that accompany successful outcomes.
 
 \input{tables/tab_cross_domain}
 
