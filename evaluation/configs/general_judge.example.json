@@ -1,0 +1,32 @@
+{
+  "workspace_root": "workspace",
+  "bench_path": "dataset/data/chart.jsonl",
+  "eval_mode": "judge",
+  "workers": 32,
+  "max_steps": 50,
+  "exec_timeout": 60,
+  "tools_enabled": true,
+  "dashboard_enabled": false,
+  "request_timeout_s": 3600,
+  "avg_k": 1,
+  "retry": {
+    "max_attempts": 3,
+    "base_delay": 2.0,
+    "max_delay": 30.0
+  },
+  "judge": {
+    "model": "${JUDGE_MODEL}",
+    "base_url": "${JUDGE_BASE_URL}",
+    "api_key": "${JUDGE_API_KEY}",
+    "temperature": 1.0,
+    "n_votes": 1,
+    "vote_temperature": 1.0
+  },
+  "extractor": {
+    "enabled": true,
+    "model": "${JUDGE_MODEL}",
+    "base_url": "${JUDGE_BASE_URL}",
+    "api_key": "${JUDGE_API_KEY}",
+    "temperature": 1.0
+  }
+}

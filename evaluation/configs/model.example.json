@@ -1,0 +1,14 @@
+{
+  "_serve_hint": "Serve local Qwen3/Qwen3.5 checkpoints with vllm serve --enable-auto-tool-choice --tool-call-parser qwen3_xml; model must equal --served-model-name.",
+  "name": "openvistool_model",
+  "model": "${TEST_MODEL_ID}",
+  "base_url": "${TEST_MODEL_BASE_URL}",
+  "api_key": "${TEST_MODEL_API_KEY}",
+  "max_tokens": 32768,
+  "temperature": 0.6,
+  "top_p": 0.95,
+  "top_k": 20,
+  "min_p": 0.0,
+  "presence_penalty": 0.0,
+  "repetition_penalty": 1.0
+}

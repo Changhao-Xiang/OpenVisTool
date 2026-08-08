@@ -1,0 +1,7 @@
+OpenVisTool contains a modified subset of nanobot, originally released under
+the MIT License by Xubin Ren and the nanobot contributors:
+https://github.com/HKUDS/nanobot
+
+The repository LICENSE applies to code in this source release. Dataset and
+benchmark licensing is documented separately in the corresponding Hugging
+Face dataset cards.

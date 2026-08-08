@@ -1,0 +1,75 @@
+{
+  "agents": {
+    "defaults": {
+      "workspace": "workspaces/release_rollout",
+      "model": "teacher-model-name",
+      "provider": "custom",
+      "maxTokens": 32768,
+      "temperature": 1.0,
+      "maxToolIterations": 100,
+      "memoryWindow": 100,
+      "reasoningEffort": null,
+      "customInstructions": "distill/run/task_specific_toolcall_instructions/table.md"
+    }
+  },
+  "providers": {
+    "custom": {
+      "apiKey": "EMPTY",
+      "apiBase": "http://127.0.0.1:8000/v1",
+      "extraHeaders": null
+    },
+    "openrouter": {
+      "apiKey": "",
+      "apiBase": null,
+      "extraHeaders": null
+    }
+  },
+  "tools": {
+    "web": {
+      "proxy": null,
+      "search": {
+        "apiKey": "",
+        "maxResults": 5
+      }
+    },
+    "exec": {
+      "timeout": 60,
+      "pathAppend": ""
+    },
+    "restrictToWorkspace": true,
+    "enabledTools": {
+      "read_file": true,
+      "write_file": true,
+      "edit_file": true,
+      "list_dir": true,
+      "exec": true,
+      "web_search": false,
+      "web_fetch": false,
+      "crop": true,
+      "draw_bbox": true,
+      "draw_line": true,
+      "draw_circle": true,
+      "color_segments": false,
+      "sample_color": false,
+      "color_clusters": false,
+      "in_range_color": true,
+      "rotate": true,
+      "flip": true,
+      "enhance_contrast": true,
+      "adjust_brightness": true,
+      "detect_edges": true,
+      "grayscale": true,
+      "connected_components": true,
+      "find_contours": true,
+      "hough_lines": true,
+      "hough_circles": true,
+      "template_match": true,
+      "render_html": false,
+      "computer_use": false
+    },
+    "enabledSkills": {
+      "memory": false,
+      "history": false
+    }
+  }
+}

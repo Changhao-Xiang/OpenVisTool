@@ -1,77 +1,32 @@
-# Local and editor state
 .DS_Store
-Thumbs.db
-.vscode/
-.idea/
-*.swp
-
-# Python/build artifacts
-__pycache__/
-*.py[cod]
-*.so
-.pytest_cache/
-.cache/
-.uv/
-.venv/
-venv/
-*.egg-info/
-dist/
-build/
-
-# Large model/data/output directories
-checkpoints/
-checkpoint/
-dataset/
-datasets/
-workspace/
-workspace_old/
-workspaces/
-outputs/
-output/
-runs/
-wandb/
-logs/
-log/
-ms-swift/
-flash-attention/
-node_modules/
-
-# Common large binary/model/data formats
-*.ckpt
-*.pt
-*.pth
-*.safetensors
-*.onnx
-*.gguf
-*.npy
-*.npz
-*.pkl
-*.pickle
-*.parquet
-*.arrow
-*.log
-
-# LaTeX build artifacts
-*.aux
-*.bbl
-*.blg
-*.out
-*.synctex.gz
-nanobot_for_distill/OpenVisTool_paper/main.pdf
-
-# Secrets and credentials
 .env
 .env.*
 !.env.example
-*.pem
-*.key
-id_rsa
-id_ed25519
-credentials*
-*credential*
-*secret*
-*api_key*
-*apikey*
-*token*
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ruff_cache/
+
+# Credentials: publish examples only.
 configs/*.json
-!configs/*.json.example
+!configs/*.example.json
+evaluation/configs/*.json
+!evaluation/configs/*.example.json
+evaluation/configs_baselines/*.json
+!evaluation/configs_baselines/*.example.json
+
+# Large or generated artifacts.
+checkpoints/
+data/
+dataset
+outputs/
+workspace/
+workspaces/
+logs/
+wandb/
+*.log
+
+# Third-party training sources should be cloned separately.
+ms-swift/
+flash-attention/
