@@ -6,21 +6,23 @@ Hugging Face.
 
 ## Setup
 
-The repository-level setup script installs construction and evaluation into a
-verified Megatron conda environment so all three stages share one environment:
+The repository-level bootstrap installs OpenVisTool and the evaluation client
+in the currently active environment. It does not alter CUDA packages:
 
 ```bash
-python -m pip install uv
-conda activate swift-fa3
-VENV_PATH="$CONDA_PREFIX" SWIFT_HOME=/path/to/ms-swift bash scripts/setup_env.sh
+conda create -n openvistool python=3.12 pip -y
+conda activate openvistool
+python -m pip install -U uv
+bash scripts/setup_env.sh
 cd evaluation
 ln -s /path/to/OpenVisTool-Bench dataset
 cp configs/model.example.json configs/model.json
 cp configs/general_judge.example.json configs/general_judge.json
 ```
 
-When an environment is activated, `eval.sh` uses its Python directly. With no
-active environment it falls back to the locked evaluation-only `uv` environment.
+Keep `openvistool` activated for `eval.sh`, which uses that environment
+directly. With no active environment it falls back to the locked
+evaluation-only `uv` environment.
 
 For an evaluation-only locked environment, run `uv sync --locked` inside
 `evaluation/`. Web-to-HTML evaluation additionally requires Playwright and
@@ -42,9 +44,12 @@ export JUDGE_BASE_URL=https://your-openai-compatible-endpoint/v1
 export JUDGE_API_KEY=...
 ```
 
-For local inference, vLLM is the default serving path. For Qwen3/Qwen3.5,
-enable its native tool-call parser and keep `TEST_MODEL_ID` equal to the served
-name:
+For local inference, vLLM is the default serving path. Install it using the
+[official GPU instructions](https://docs.vllm.ai/en/latest/getting_started/installation/gpu.html).
+It can live in the shared environment when dependency versions are compatible,
+or in a separate serving environment because the harness only uses its HTTP
+endpoint. For Qwen3/Qwen3.5, enable the native tool-call parser and keep
+`TEST_MODEL_ID` equal to the served name:
 
 ```bash
 CUDA_VISIBLE_DEVICES=0,1,2,3 vllm serve /path/to/checkpoint \

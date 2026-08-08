@@ -75,6 +75,9 @@ export VIDEO_MAX_TOKEN_NUM="${VIDEO_MAX_TOKEN_NUM:-128}"
 export FPS_MAX_FRAMES="${FPS_MAX_FRAMES:-16}"
 export OMP_NUM_THREADS="${OMP_NUM_THREADS:-1}"
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
+# Hugging Face dataset builder locks are unreliable on some network file
+# systems. Keep only the disposable dataset metadata cache node-local.
+export HF_DATASETS_CACHE="${HF_DATASETS_CACHE:-${TMPDIR:-/tmp}/openvistool-hf-datasets-${USER:-user}}"
 
 mkdir -p "${OUTPUT_DIR}"
 
