@@ -7,7 +7,7 @@ SFT format, trains open multimodal models, and evaluates them on a five-domain
 benchmark.
 
 [[Hugging Face collection](https://huggingface.co/collections/LockOnN/openvistool)]
-[[arXiv (coming soon)](https://arxiv.org/abs/XXXX.XXXXX)]
+[[Paper](https://arxiv.org/abs/2608.08557)]
 
 This source release accompanies two separately distributed datasets:
 
