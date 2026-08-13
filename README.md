@@ -1,4 +1,10 @@
-# OpenVisTool
+# OpenVisTool: An Open Recipe for Synthesizing Instructive Visual Tool-Use Trajectories
+
+<p align="left">
+  <a href="https://arxiv.org/abs/2608.08557">📄 Paper</a>
+  &nbsp; | &nbsp;
+  <a href="https://huggingface.co/collections/LockOnN/openvistool">🤗 Collection</a>
+</p>
 
 OpenVisTool is a data and training pipeline for tool-augmented visual agents.
 It rolls out a teacher agent on multimodal tasks, filters trajectories by
@@ -6,15 +12,12 @@ answer correctness and measurable tool gain, converts the retained traces to
 SFT format, trains open multimodal models, and evaluates them on a five-domain
 benchmark.
 
-[[Hugging Face collection](https://huggingface.co/collections/LockOnN/openvistool)]
-[[Paper](https://arxiv.org/abs/2608.08557)]
+This source release includes two datasets:
 
-This source release accompanies two separately distributed datasets:
-
-- [**OpenVisTool-42K**](https://huggingface.co/datasets/LockOnN/OpenVisTool-42K):
+- [OpenVisTool-42K](https://huggingface.co/datasets/LockOnN/OpenVisTool-42K):
   42,048 SFT trajectories with interleaved reasoning, tool calls, tool
   observations, and final answers.
-- [**OpenVisTool-Bench**](https://huggingface.co/datasets/LockOnN/OpenVisTool-Bench):
+- [OpenVisTool-Bench](https://huggingface.co/datasets/LockOnN/OpenVisTool-Bench):
   559 evaluation examples spanning Chart, Table, Visual Search, GUI Grounding,
   and Web-to-HTML.
 
